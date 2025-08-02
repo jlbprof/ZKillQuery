@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 import csv
 import json
@@ -82,6 +82,4 @@ with open(config["db_output"], 'a', encoding='utf-8') as output:
                 except json.JSONDecodeError as e:
                     print(f"Invalid JSON: {e}")
                     print("Skipping line")
-
-
 

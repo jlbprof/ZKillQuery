@@ -5,3 +5,6 @@ mapSolarSystems.csv
 output.jsonl
 config.json
 db_output.csv
+ZKillQuery.db
+db_zkill_query.db
+output.txt
