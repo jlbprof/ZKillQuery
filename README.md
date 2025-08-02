@@ -27,6 +27,19 @@ These files are git ignored.
 - json
 - requests
 
+## Config.json
+
+Here is an example of the config.json file you need to create.
+
+```
+{
+    "redis_queue_name": "BobTheWHGod",
+    "regions": [ 10000047 ]
+}
+```
+
+Where redis_queue_name is required by ZKill Redis to keep a queue for you. And you can provide a set of regions that you are interested in.  In the long run the program will only print out kills from those regions.
+
 ### Ignore victims.py
 
 I saved some code for later, will destroy when done with it.
