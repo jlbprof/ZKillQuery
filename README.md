@@ -34,11 +34,12 @@ Here is an example of the config.json file you need to create.
 ```
 {
     "redis_queue_name": "BobTheWHGod",
-    "regions": [ 10000047 ]
+    "regions": [ 10000047 ],
+    "db_output": "db_output.csv"
 }
 ```
 
-Where redis_queue_name is required by ZKill Redis to keep a queue for you. And you can provide a set of regions that you are interested in.  In the long run the program will only print out kills from those regions.
+Where redis_queue_name is required by ZKill Redis to keep a queue for you. And you can provide a set of regions that you are interested in.  In the long run the program will only print out kills from those regions. "db_output" is a csv that can be uploaded to a database.
 
 ### Ignore victims.py
 

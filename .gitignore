@@ -4,3 +4,4 @@ mapRegions.csv
 mapSolarSystems.csv
 output.jsonl
 config.json
+db_output.csv
