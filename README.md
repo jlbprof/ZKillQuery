@@ -26,4 +26,8 @@ monitor_kills.py
 - json
 - requests
 
+### Ignore victims.py
+
+I saved some code for later, will destroy when done with it.
+
 
