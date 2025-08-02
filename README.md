@@ -18,8 +18,8 @@ These files are git ignored.
 
 ## Initial Programs
 
-monitor_kills.py - This will be the main reader of the Zkill Redis stream
-watch_output.sh  - Is a temporary program to read output from Zkill redis to create a dataset to test monitor_kills.py against
+- monitor_kills.py - This will be the main reader of the Zkill Redis stream
+- watch_output.sh  - Is a temporary program to read output from Zkill redis to create a dataset to test monitor_kills.py against
 
 ### Pip Install
 
