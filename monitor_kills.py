@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 
 import csv
+import json
+import os
 
 # I have a set of csv files that contain relevant information for the queries.
 # I could have put them in a database, but because of the simple streaming app this is
@@ -23,5 +25,22 @@ regions_dict = csv_to_dict('mapRegions.csv',0)
 
 print (items_dict['587'])
 
+# Now read in your configuration
+
+if os.path.exists('config.json'):
+    print("Config Exists")
+    try:
+        with open('config.json', 'r', encoding='utf-8') as file:
+            config = json.load(file)
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        print(f"Error loading config: {e}")
+        os.exit(1)
+
+    print("Redis Queue:", config["redis_queue_name"])
+    print("Regions of Interest:", config["regions"])
+
+else:
+    print("config.json does not exist")
+    os.exit(1)
 
 
