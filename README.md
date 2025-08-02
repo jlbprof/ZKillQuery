@@ -1,0 +1,28 @@
+# What Is Being Destroyed
+
+This is a set of programs that monitor the output of zkillboards redis for kills as they happen.  It collates them and lists the ship type destroyed and all items destroyed and dropped.   You can then view the output and watch as it progresses.
+
+## What you need
+
+You need the following files from Fuzzworks, they don't change often but you should download them for yourself.
+
+CSV Files you need to download into the main directory
+
+- https://www.fuzzwork.co.uk/dump/latest/invTypes.csv
+- https://www.fuzzwork.co.uk/dump/latest/invFlags.csv
+- https://www.fuzzwork.co.uk/dump/latest/mapSolarSystems.csv
+- https://www.fuzzwork.co.uk/dump/latest/mapRegions.csv
+
+These files are git ignored.
+
+## Initial Program
+
+monitor_kills.py
+
+### Pip Install
+
+- csv
+- json
+- requests
+
+
