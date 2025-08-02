@@ -1,4 +1,5 @@
-# What Is Being Destroyed
+# In the Game EVE Online
+## What Is Being Destroyed
 
 This is a set of programs that monitor the output of zkillboards redis for kills as they happen.  It collates them and lists the ship type destroyed and all items destroyed and dropped.   You can then view the output and watch as it progresses.
 
