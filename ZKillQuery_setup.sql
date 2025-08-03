@@ -1,5 +1,5 @@
 --
--- File generated with SQLiteStudio v3.4.17 on Sat Aug 2 17:45:25 2025
+-- File generated with SQLiteStudio v3.4.17 on Sat Aug 2 19:32:06 2025
 --
 -- Text encoding used: UTF-8
 --
@@ -56,6 +56,13 @@ CREATE TABLE IF NOT EXISTS solar_systems (
     solarSystemID   INTEGER PRIMARY KEY,
     regionID        INTEGER REFERENCES regions (regionID),
     solarSystemName TEXT    NOT NULL
+);
+
+
+-- Index: time_based
+CREATE INDEX IF NOT EXISTS time_based ON killmails (
+    time ASC,
+    killmail_id ASC
 );
 
 

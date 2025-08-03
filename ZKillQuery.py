@@ -184,8 +184,6 @@ def insert_zkill(conn, data):
         solar_system_id = str(data["package"]["killmail"]["solar_system_id"])
         ship_type_id    = str(data["package"]["killmail"]["victim"]["ship_type_id"])
 
-        insert_killmail(conn, int(killmail_id), str(killmail_time), int(solar_system_id), int(ship_type_id))
-
         items_list      = data["package"]["killmail"]["victim"]["items"]
 
         solar_system_name = solar_systems_dict[str(solar_system_id)][3]
@@ -195,10 +193,14 @@ def insert_zkill(conn, data):
         print("KILL", "Ship: (" + items_dict[str(ship_type_id)][2] + ")", "System: (" + solar_system_name + ")", "Region: (" + region_name + ")")
 
         if not region in regions_to_record:
-            print("Not Recorded")
+            print("Not Recorded", region)
             return
         else:
-            print("Recording")
+            print("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+            print("Recording", region)
+            print("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+
+        insert_killmail(conn, int(killmail_id), str(killmail_time), int(solar_system_id), int(ship_type_id))
 
         for item in items_list:
             item_type_id = item["item_type_id"]

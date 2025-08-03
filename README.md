@@ -16,16 +16,19 @@ CSV Files you need to download into the main directory
 
 These files are git ignored.
 
-## Initial Programs
+## Program
 
-- monitor_kills.py - This will be the main reader of the Zkill Redis stream
-- watch_output.sh  - Is a temporary program to read output from Zkill redis to create a dataset to test monitor_kills.py against
+- ZKillQuery.py
 
 ### Pip Install
 
 - csv
 - json
 - requests
+- time
+- sqlite3
+- Path
+- Optional
 
 ## Config.json
 
@@ -35,14 +38,35 @@ Here is an example of the config.json file you need to create.
 {
     "redis_queue_name": "BobTheWHGod",
     "regions": [ 10000047 ],
-    "db_output": "db_output.csv"
+    "db_fname": "db_zkill_query.db"
 }
 ```
 
-Where redis_queue_name is required by ZKill Redis to keep a queue for you. And you can provide a set of regions that you are interested in.  In the long run the program will only print out kills from those regions. "db_output" is a csv that can be uploaded to a database.
+- `redis_queue_name` is required by ZKill Redis to keep a queue for you
+- `regions`, are the regionID's that you are interested in.
+- `db_fname`, is the sqlite db this is stored in.
 
-### Ignore victims.py
+## Files
 
-I saved some code for later, will destroy when done with it.
+- `ZKillQuery.py`, is the program
+- `ZKillQuery.db`, is a db I use to play with the schema
+- `ZKillQuery_setup.sql`, is the schema file used to initialize the database
 
+## To Run
+
+If you are just testing use `./test_init.sh` it will give you a new database.  Otherwise `./test.sh`.
+
+`Cntrl-C` is the primary way to stop this.
+
+## Observations
+
+The redis stream is a going forward only stream, if your monitor is off you will miss the kills during that time.
+
+I think in the future I will either package this as a persistent container and run with docker, or as a systemd service.  It should just run all the time.
+
+## Notes:
+
+`run_studio.sh` - I use to launch SQLiteStudio to observe the db in action.
+
+I have not created any indices yet for this database as I am not sure how I am going to be querying it.   That is to come.
 
