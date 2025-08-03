@@ -3,6 +3,10 @@
 import csv
 import json
 import os
+import sys
+
+import requests
+import time
 
 import sqlite3
 from pathlib import Path
@@ -15,6 +19,7 @@ items_dict = {}
 flags_dict = {}
 solar_systems_dict = {}
 regions_dict = {}
+regions_to_record = {}
 
 def create_database_connection(db_path: str) -> sqlite3.Connection:
     """Create and return a connection to the SQLite database."""
@@ -145,7 +150,74 @@ def load_solar_systems(conn):
         data.append((solarSystemID, regionID, solarSystemName))
 
     batch_insert(conn, 'solar_systems', ['solarSystemID', 'regionID', 'solarSystemName'], data)
- 
+
+def insert_droppedItem(conn, typeID, flagID, quantity, killmail_id):
+    sql = f"INSERT INTO droppedItems (typeID, flagID, quantity, killmail_id) VALUES (?,?,?,?)"
+    
+    cursor = conn.cursor()
+    try:
+        cursor.execute(sql, [typeID, flagID, quantity, killmail_id])
+        conn.commit()
+        return cursor.rowcount
+    except sqlite3.Error as e:
+        conn.rollback()
+        print("ERROR E", e)
+        raise e
+
+def insert_killmail(conn, killmail_id, xtime, solarSystemID, ship_type_id):
+    sql = f"INSERT INTO killmails (killmail_id, time, solarSystemID, ship_type_id) VALUES (?,?,?,?)"
+    
+    cursor = conn.cursor()
+    try:
+        cursor.execute(sql, [killmail_id, xtime, solarSystemID, ship_type_id])
+        conn.commit()
+        return cursor.rowcount
+    except sqlite3.Error as e:
+        conn.rollback()
+        print("ERROR E", e)
+        raise e
+
+def insert_zkill(conn, data):
+    try:
+        killmail_id = data["package"]["killmail"]["killmail_id"]
+        killmail_time = data["package"]["killmail"]["killmail_time"]
+        solar_system_id = str(data["package"]["killmail"]["solar_system_id"])
+        ship_type_id    = str(data["package"]["killmail"]["victim"]["ship_type_id"])
+
+        insert_killmail(conn, int(killmail_id), str(killmail_time), int(solar_system_id), int(ship_type_id))
+
+        items_list      = data["package"]["killmail"]["victim"]["items"]
+
+        solar_system_name = solar_systems_dict[str(solar_system_id)][3]
+        region            = str(solar_systems_dict[str(solar_system_id)][0])
+        region_name       = regions_dict[region][1]
+
+        print("KILL", "Ship: (" + items_dict[str(ship_type_id)][2] + ")", "System: (" + solar_system_name + ")", "Region: (" + region_name + ")")
+
+        if not region in regions_to_record:
+            print("Not Recorded")
+            return
+        else:
+            print("Recording")
+
+        for item in items_list:
+            item_type_id = item["item_type_id"]
+            flag_id = item["flag"]
+            x = items_dict[str(item_type_id)]
+            item_name    = items_dict[str(item_type_id)][2]
+            quantity     = 0
+            if 'quantity_destroyed' in item:
+                quantity = item["quantity_destroyed"]
+            else:
+                quantity = item["quantity_dropped"]
+
+            count = insert_droppedItem(conn, item_type_id, flag_id, quantity, killmail_id)
+
+    except json.JSONDecodeError as e:
+        print(f"Invalid JSON: {e}")
+        print("Skipping line")
+        return
+
 # ==============================================
 # Main program execution starts here
 # ==============================================
@@ -157,15 +229,18 @@ if __name__ == "__main__":
                 config = json.load(file)
         except (FileNotFoundError, json.JSONDecodeError) as e:
             print(f"Error loading config: {e}")
-            os.exit(1)
+            sys.exit(1)
 
         print("Redis Queue:", config["redis_queue_name"])
         print("Regions of Interest:", config["regions"])
         print("DB FName:", config["db_fname"])
 
+        for iRegion in config["regions"]:
+            regions_to_record[str(iRegion)] = 1
+
     else:
         print("config.json does not exist")
-        os.exit(1)
+        sys.exit(1)
 
     # Load the tables
 
@@ -207,4 +282,19 @@ if __name__ == "__main__":
         load_regions(conn)
         load_solar_systems(conn)
 
+    # Sit in a loop and accept notifications from Zkillmails RedisQ
+
+    while True:
+        try:
+            response = requests.get("https://zkillredisq.stream/listen.php?queueID=" + config["redis_queue_name"], stream=True)
+            if response.status_code == 200:
+                data = response.json()
+                insert_zkill(conn, data)
+            else:
+                print("Status Code is not 200", response.status_code)
+                continue
+
+        except Exception as e:
+            print(f"Error: X {e}")
+            continue
 

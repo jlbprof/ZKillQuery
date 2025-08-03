@@ -1,5 +1,5 @@
 --
--- File generated with SQLiteStudio v3.4.17 on Sat Aug 2 13:46:12 2025
+-- File generated with SQLiteStudio v3.4.17 on Sat Aug 2 17:45:25 2025
 --
 -- Text encoding used: UTF-8
 --
@@ -8,12 +8,13 @@ BEGIN TRANSACTION;
 
 -- Table: droppedItems
 CREATE TABLE IF NOT EXISTS droppedItems (
-    droppedID INTEGER PRIMARY KEY AUTOINCREMENT
-                      NOT NULL,
-    typeID    INTEGER REFERENCES invTypes (typeID),
-    flagID    INTEGER REFERENCES invFlags (flagID) 
-                      NOT NULL,
-    quantity  INTEGER NOT NULL
+    droppedID   INTEGER PRIMARY KEY AUTOINCREMENT
+                        NOT NULL,
+    typeID      INTEGER REFERENCES invTypes (typeID),
+    flagID      INTEGER REFERENCES invFlags (flagID) 
+                        NOT NULL,
+    quantity    INTEGER NOT NULL,
+    killmail_id INTEGER REFERENCES killmails (killmail_id) 
 );
 
 
@@ -52,7 +53,7 @@ STRICT;
 
 -- Table: solar_systems
 CREATE TABLE IF NOT EXISTS solar_systems (
-    solarSystemID           PRIMARY KEY,
+    solarSystemID   INTEGER PRIMARY KEY,
     regionID        INTEGER REFERENCES regions (regionID),
     solarSystemName TEXT    NOT NULL
 );
