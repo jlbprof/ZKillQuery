@@ -8,3 +8,5 @@ db_output.csv
 ZKillQuery.db
 db_zkill_query.db
 output.txt
+report.txt
+__pycache__
