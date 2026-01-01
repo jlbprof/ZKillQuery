@@ -5,7 +5,7 @@ Description=ZKillQuery Container
 Image=localhost/zkillquery:latest
 ContainerName=zkillquery-run
 Volume=~/ZKillQueryData:/app/ZKillQueryData
-Exec=/bin/bash -c "cd /app/ZKillQuery && ls -ld * && exec python3 ZKillQuery.py"  # Matches your ENTRYPOINT, but explicit for Quadlet
+Exec=/bin/bash -c "cd /app/ZKillQuery && ls -ld * && python3 -uZKillQuery.py"
 
 [Service]
 Restart=always  # Auto-restart if it exits/crashes
