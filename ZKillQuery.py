@@ -8,9 +8,20 @@ import sys
 import requests
 import time
 
+import logging
+
 import sqlite3
 from pathlib import Path
 from typing import Optional
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('/app/ZKillQueryData/run.log'),
+        logging.StreamHandler()  # Also to stdout/journal
+    ]
+)
 
 # global variables
 config = {}
@@ -32,13 +43,13 @@ def create_database_connection(db_path: str) -> sqlite3.Connection:
         conn.execute("PRAGMA foreign_keys = ON")  # Enable foreign key constraints
         return conn
     except sqlite3.Error as e:
-        print(f"Error connecting to database: {e}")
+        logging.info(f"Error connecting to database: {e}")
         raise
 
 def execute_sql_file(conn: sqlite3.Connection, sql_file: Path) -> bool:
     """Execute SQL commands from a file within a transaction."""
     if not sql_file.is_file():
-        print(f"Error: SQL file not found at {sql_file}")
+        logging.info(f"Error: SQL file not found at {sql_file}")
         return False
 
     try:
@@ -51,20 +62,20 @@ def execute_sql_file(conn: sqlite3.Connection, sql_file: Path) -> bool:
         return True
     except sqlite3.Error as e:
         conn.rollback()
-        print(f"Error executing SQL script: {e}")
+        logging.info(f"Error executing SQL script: {e}")
         return False
     except Exception as e:
         conn.rollback()
-        print(f"Unexpected error: {e}")
+        logging.info(f"Unexpected error: {e}")
         return False
 
 def validate_sql_file(sql_file: Path) -> bool:
     """Perform basic validation on the SQL file."""
     if not sql_file.exists():
-        print(f"Error: File {sql_file} does not exist")
+        logging.info(f"Error: File {sql_file} does not exist")
         return False
     if sql_file.suffix.lower() != '.sql':
-        print("Warning: File extension is not .sql")
+        logging.info("Warning: File extension is not .sql")
     return True
 
 def initialize_database(db_path: str, sql_file: str) -> bool:
@@ -165,7 +176,7 @@ def insert_droppedItem(conn, typeID, flagID, quantity, killmail_id):
         return cursor.rowcount
     except sqlite3.Error as e:
         conn.rollback()
-        print("ERROR E", e)
+        logging.info("ERROR E", e)
         raise e
 
 def insert_killmail(conn, killmail_id, xtime, solarSystemID, ship_type_id):
@@ -178,7 +189,7 @@ def insert_killmail(conn, killmail_id, xtime, solarSystemID, ship_type_id):
         return cursor.rowcount
     except sqlite3.Error as e:
         conn.rollback()
-        print("ERROR E", e)
+        logging.info("ERROR E", e)
         raise e
 
 def insert_zkill(conn, data):
@@ -194,15 +205,15 @@ def insert_zkill(conn, data):
         region            = str(solar_systems_dict[str(solar_system_id)][0])
         region_name       = regions_dict[region][1]
 
-        print("KILL", "Ship: (" + items_dict[str(ship_type_id)][2] + ")", "System: (" + solar_system_name + ")", "Region: (" + region_name + ")")
+        logging.info("KILL", "Ship: (" + items_dict[str(ship_type_id)][2] + ")", "System: (" + solar_system_name + ")", "Region: (" + region_name + ")")
 
         if not region in regions_to_record:
-            print("Not Recorded", region)
+            logging.info("Not Recorded", region)
             return
         else:
-            print("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-            print("Recording", region)
-            print("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+            logging.info("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+            logging.info("Recording", region)
+            logging.info("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 
         insert_killmail(conn, int(killmail_id), str(killmail_time), int(solar_system_id), int(ship_type_id))
 
@@ -220,8 +231,8 @@ def insert_zkill(conn, data):
             count = insert_droppedItem(conn, item_type_id, flag_id, quantity, killmail_id)
 
     except json.JSONDecodeError as e:
-        print(f"Invalid JSON: {e}")
-        print("Skipping line")
+        logging.info(f"Invalid JSON: {e}")
+        logging.info("Skipping line")
         return
 
 # ==============================================
@@ -229,23 +240,23 @@ def insert_zkill(conn, data):
 # ==============================================
 if __name__ == "__main__":
     if os.path.exists(data_dir + 'config.json'):
-        print("Config Exists")
+        logging.info("Config Exists")
         try:
             with open('/app/ZKillQueryData/config.json', 'r', encoding='utf-8') as file:
                 config = json.load(file)
         except (FileNotFoundError, json.JSONDecodeError) as e:
-            print(f"Error loading config: {e}")
+            logging.info(f"Error loading config: {e}")
             sys.exit(1)
 
-        print("Redis Queue:", config["redis_queue_name"])
-        print("Regions of Interest:", config["regions"])
-        print("DB FName:", config["db_fname"])
+        logging.info("Redis Queue:", config["redis_queue_name"])
+        logging.info("Regions of Interest:", config["regions"])
+        logging.info("DB FName:", config["db_fname"])
 
         for iRegion in config["regions"]:
             regions_to_record[str(iRegion)] = 1
 
     else:
-        print("config.json does not exist")
+        logging.info("config.json does not exist")
         sys.exit(1)
 
     # Load the tables
@@ -266,19 +277,19 @@ if __name__ == "__main__":
             sql_file = "ZKillQuery_setup.sql"
 
             if initialize_database(sql_path, sql_file):
-                print("Database initialized successfully!")
+                logging.info("Database initialized successfully!")
                 created = True
             else:
-                print("Failed to initialize database.")
+                logging.info("Failed to initialize database.")
                 exit(1)
         except KeyboardInterrupt:
-            print("\nOperation cancelled by user.")
+            logging.info("\nOperation cancelled by user.")
             exit(1)
         except Exception as e:
-            print(f"An unexpected error occurred: {e}")
+            logging.info(f"An unexpected error occurred: {e}")
             exit(1)
     else:
-        print("Database already exists")
+        logging.info("Database already exists")
 
     conn = create_database_connection(sql_path)
 
@@ -293,14 +304,16 @@ if __name__ == "__main__":
     while True:
         try:
             response = requests.get("https://zkillredisq.stream/listen.php?queueID=" + config["redis_queue_name"], stream=True)
-            if response.status_code == 200:
-                data = response.json()
-                insert_zkill(conn, data)
-            else:
-                print("Status Code is not 200", response.status_code)
-                continue
-
-        except Exception as e:
-            print(f"Error: X {e}")
+            response.raise_for_status()
+            data = response.json()
+            insert_zkill(conn, data)
+        except requests.exceptions.RequestException as e:
+            print(f"Network error: {e} - Retrying in 10 seconds...")
+            time.sleep(10)  # Backoff to avoid hammering the API
+        except json.JSONDecodeError as e:
+            print(f"JSON decode error: {e} - Skipping...")
             continue
+        except Exception as e:  # Catch-all for unexpected issues
+            print(f"Unexpected error: {e}")
+            raise  # Re-raise to exit if critical, or handle as needed
 
