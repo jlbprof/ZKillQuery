@@ -21,6 +21,8 @@ solar_systems_dict = {}
 regions_dict = {}
 regions_to_record = {}
 
+data_dir = '/app/ZKillQueryData/'
+
 def create_database_connection(db_path: str) -> sqlite3.Connection:
     """Create and return a connection to the SQLite database."""
     try:
@@ -224,7 +226,7 @@ def insert_zkill(conn, data):
 # Main program execution starts here
 # ==============================================
 if __name__ == "__main__":
-    if os.path.exists('/app/ZKillQueryData/config.json'):
+    if os.path.exists(data_dir + 'config.json'):
         print("Config Exists")
         try:
             with open('/app/ZKillQueryData/config.json', 'r', encoding='utf-8') as file:
@@ -246,10 +248,10 @@ if __name__ == "__main__":
 
     # Load the tables
 
-    items_dict = csv_to_dict('invTypes.csv',0)
-    flags_dict = csv_to_dict('invFlags.csv',0)
-    solar_systems_dict = csv_to_dict('mapSolarSystems.csv',2)
-    regions_dict = csv_to_dict('mapRegions.csv',0)
+    items_dict = csv_to_dict(data_dir + 'invTypes.csv',0)
+    flags_dict = csv_to_dict(data_dir + 'invFlags.csv',0)
+    solar_systems_dict = csv_to_dict(data_dir + 'mapSolarSystems.csv',2)
+    regions_dict = csv_to_dict(data_dir + 'mapRegions.csv',0)
 
     # Do we need to create the database?
 
