@@ -2,28 +2,24 @@
 
 set -x
 
-# Stop and remove any existing container (safe cleanup)
+# Cleanup old container/image (optional but safe)
 podman stop zkillquery-run || true
 podman rm zkillquery-run || true
-
-# Remove old image if exists
 podman rmi localhost/zkillquery:latest || true
 
-# Build the new image
+# Build the image
 podman build -t localhost/zkillquery:latest .
 
-# Ensure Quadlet directory exists (one-time setup)
+# Ensure Quadlet directory and file are in place
 mkdir -p ~/.config/containers/systemd
-
-# (Optional) Copy your Quadlet file here if it's not already in place
 cp zkillquery.container ~/.config/containers/systemd/
 
-# Reload systemd to detect the Quadlet
+# Reload systemd user daemon to pick up the new/updated Quadlet
 systemctl --user daemon-reload
 
-# Enable for auto-start on boot/login
-systemctl --user enable zkillquery.service
-
-# Start (or restart) the container via systemd
-systemctl --user start zkillquery.service
+# IMPORTANT: Use the correct Quadlet service name
+systemctl --user enable container-zkillquery.service   # <-- fixed name
+systemctl --user restart container-zkillquery.service  # restart = stop old + start new
+# Or just start if it wasn't running:
+# systemctl --user start container-zkillquery.service
 
