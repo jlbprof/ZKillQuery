@@ -5,13 +5,13 @@ RUN apt-get upgrade -y
 RUN apt-get install -y git
 RUN rm -rf /var/lib/apt/lists/*
 
-RUN git clone git@github.com:jlbprof/ZKillQuery.git /app/ZKillQuery && cd /app/ZKillQuery && git checkout use_a_container
+RUN git clone https://github.com/jlbprof/ZKillQuery.git /app/ZKillQuery
 
-RUN pwd
-RUN ls -ld *
+WORKDIR /app/ZKillQuery
+
+RUN git checkout use_a_container
+
 RUN pip install --no-cache-dir -r requirements.txt
 
-ENTRYPOINT ["/bin/bash", "\
-    cd /app/ZKillQuery && \
-    ./infinite_sleep.sh" ]
+ENTRYPOINT [ "/bin/sh", "inifinite_sleep.sh" ]
 

@@ -224,10 +224,10 @@ def insert_zkill(conn, data):
 # Main program execution starts here
 # ==============================================
 if __name__ == "__main__":
-    if os.path.exists('config.json'):
+    if os.path.exists('/app/ZKillQueryData/config.json'):
         print("Config Exists")
         try:
-            with open('config.json', 'r', encoding='utf-8') as file:
+            with open('/app/ZKillQueryData/config.json', 'r', encoding='utf-8') as file:
                 config = json.load(file)
         except (FileNotFoundError, json.JSONDecodeError) as e:
             print(f"Error loading config: {e}")
