@@ -14,5 +14,5 @@ RUN git checkout use_a_container
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
-ENTRYPOINT [ "/bin/bash", "-c", "cd /app/ZKillQuery && ls -ld * && whereis python3" ]
+ENTRYPOINT [ "/bin/bash", "-c", "cd /app/ZKillQuery && ls -ld * && /usr/local/bin/python3 ZKillQuery.py" ]
 
