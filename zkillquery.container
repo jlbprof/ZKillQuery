@@ -6,7 +6,7 @@ Image=localhost/zkillquery:latest
 ContainerName=zkillquery-run
 Volume=~/ZKillQueryData:/app/ZKillQueryData
 PodmanArgs=--log-driver=journald
-Exec=/bin/bash -c "cd /app/ZKillQuery && ls -ld * && python3 -u ZKillQuery.py"
+Exec=/bin/bash -c "cd /app/ZKillQuery && ls -ld *"
 LogDriver=journald
 StandardOutput=journal
 StandardError=journal

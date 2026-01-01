@@ -23,6 +23,8 @@ regions_to_record = {}
 
 data_dir = '/app/ZKillQueryData/'
 
+sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 1)
+
 def create_database_connection(db_path: str) -> sqlite3.Connection:
     """Create and return a connection to the SQLite database."""
     try:
