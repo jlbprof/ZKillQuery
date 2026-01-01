@@ -6,6 +6,9 @@ Image=localhost/zkillquery:latest
 ContainerName=zkillquery-run
 Volume=~/ZKillQueryData:/app/ZKillQueryData
 Exec=/bin/bash -c "cd /app/ZKillQuery && ls -ld * && python3 -uZKillQuery.py"
+LogDriver=journald
+StandardOutput=journal
+StandardError=journal
 
 [Service]
 Restart=always  # Auto-restart if it exits/crashes
