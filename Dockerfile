@@ -13,5 +13,5 @@ RUN git checkout use_a_container
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-ENTRYPOINT [ "/bin/sh", "inifinite_sleep.sh" ]
+ENTRYPOINT [ "/bin/bash", "-c", "cd /app/ZKillQuery && exec /bin/sh infinite_sleep.sh" ]
 
