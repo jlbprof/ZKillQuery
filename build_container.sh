@@ -22,8 +22,8 @@ sleep 5
 systemctl --user list-unit-files | grep zkillquery
 
 # IMPORTANT: Use the correct Quadlet service name
-systemctl --user enable container-zkillquery.service   # <-- fixed name
-systemctl --user restart container-zkillquery.service  # restart = stop old + start new
+systemctl --user enable container-zkillquery-run.service   # <-- fixed name
+systemctl --user restart container-zkillquery-run.service  # restart = stop old + start new
 # Or just start if it wasn't running:
 # systemctl --user start container-zkillquery.service
 
