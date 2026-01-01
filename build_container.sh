@@ -16,6 +16,10 @@ cp zkillquery.container ~/.config/containers/systemd/
 
 # Reload systemd user daemon to pick up the new/updated Quadlet
 systemctl --user daemon-reload
+sleep 5
+systemctl --user daemon-reload
+sleep 5
+systemctl --user list-unit-files | grep zkillquery
 
 # IMPORTANT: Use the correct Quadlet service name
 systemctl --user enable container-zkillquery.service   # <-- fixed name
