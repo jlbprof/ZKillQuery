@@ -22,13 +22,7 @@ These files are git ignored.
 
 ### Pip Install
 
-- csv
-- json
-- requests
-- time
-- sqlite3
-- Path
-- Optional
+- requirements.txt
 
 ## Config.json
 

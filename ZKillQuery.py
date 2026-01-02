@@ -14,15 +14,6 @@ import sqlite3
 from pathlib import Path
 from typing import Optional
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('/app/ZKillQueryData/run.log'),
-        logging.StreamHandler()  # Also to stdout/journal
-    ]
-)
-
 # global variables
 config = {}
 
@@ -33,6 +24,25 @@ regions_dict = {}
 regions_to_record = {}
 
 data_dir = '/app/ZKillQueryData/'
+
+if not os.path.exists(data_dir):
+    # The datadir does not exist, alternative path is $HOME/ZKillQueryData
+    data_dir = os.getenv('HOME') + "/ZKillQueryData/"
+
+if not os.path.exists(data_dir):
+    print(f"Unable to access data_dir :" + data_dir + ":")
+    sys.exit(1)
+
+print("DATA_DIR is " + data_dir)
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler(data_dir + 'run.log'),
+        logging.StreamHandler()  # Also to stdout/journal
+    ]
+)
 
 sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 1)
 
@@ -205,14 +215,14 @@ def insert_zkill(conn, data):
         region            = str(solar_systems_dict[str(solar_system_id)][0])
         region_name       = regions_dict[region][1]
 
-        logging.info("KILL", "Ship: (" + items_dict[str(ship_type_id)][2] + ")", "System: (" + solar_system_name + ")", "Region: (" + region_name + ")")
+        logging.info("KILL " + "Ship: (" + items_dict[str(ship_type_id)][2] + ") " + "System: (" + solar_system_name + ")", "Region: (" + region_name + ")")
 
         if not region in regions_to_record:
-            logging.info("Not Recorded", region)
+            logging.info("Not Recorded " + region)
             return
         else:
             logging.info("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-            logging.info("Recording", region)
+            logging.info("Recording" + region)
             logging.info("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 
         insert_killmail(conn, int(killmail_id), str(killmail_time), int(solar_system_id), int(ship_type_id))
@@ -242,15 +252,18 @@ if __name__ == "__main__":
     if os.path.exists(data_dir + 'config.json'):
         logging.info("Config Exists")
         try:
-            with open('/app/ZKillQueryData/config.json', 'r', encoding='utf-8') as file:
+            with open(data_dir + 'config.json', 'r', encoding='utf-8') as file:
                 config = json.load(file)
         except (FileNotFoundError, json.JSONDecodeError) as e:
             logging.info(f"Error loading config: {e}")
             sys.exit(1)
 
-        logging.info("Redis Queue:", config["redis_queue_name"])
-        logging.info("Regions of Interest:", config["regions"])
-        logging.info("DB FName:", config["db_fname"])
+        logging.info("Redis Queue: " + config["redis_queue_name"])
+
+        regions_string = ', '.join(str(region) for region in config["regions"])
+
+        logging.info("Regions of Interest: " + regions_string)
+        logging.info("DB FName:" + config["db_fname"])
 
         for iRegion in config["regions"]:
             regions_to_record[str(iRegion)] = 1
@@ -306,6 +319,7 @@ if __name__ == "__main__":
             response = requests.get("https://zkillredisq.stream/listen.php?queueID=" + config["redis_queue_name"], stream=True)
             response.raise_for_status()
             data = response.json()
+            logging.info(data)
             insert_zkill(conn, data)
         except requests.exceptions.RequestException as e:
             print(f"Network error: {e} - Retrying in 10 seconds...")
