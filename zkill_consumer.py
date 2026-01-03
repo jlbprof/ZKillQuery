@@ -309,6 +309,19 @@ if __name__ == "__main__":
             oldest_queued = get_file_from_queue(queue_dir)
             if oldest_queued:
                 logger.info("Oldest Queued " + oldest_queued.as_posix())
+
+                data = json.loads(oldest_queued.read_text())
+                killID = data['package']['killID']
+                kill_hash = data['package']['zkb']['hash']
+
+                url_template = "https://esi.evetech.net/latest/killmails/{zkillID}/{hash}/"
+                url = url_template.format(zkillID=killID, hash=kill_hash)
+                logger.info("Killmail info for url " + str(killID) + " " + kill_hash + " " + url)
+
+                response = requests.get(url)
+                response.raise_for_status()
+
+
                 oldest_queued.unlink()
                 logger.info("Deleted " + oldest_queued.as_posix())
             else:
