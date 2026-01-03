@@ -2,7 +2,10 @@
 
 set -x
 
-rm -f ~/ZKillQuery/Data/run.log
+rm -f ~/ZKillQueryData/run.log
+rm -f ~/ZKillQueryData/zkill.log
+mkdir -p ~/ZKillQueryData/queue
 
-python3 ZKillQuery.py
+python3 zkill_producer.py
+
 
