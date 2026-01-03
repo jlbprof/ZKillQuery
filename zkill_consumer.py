@@ -23,7 +23,12 @@ solar_systems_dict = {}
 regions_dict = {}
 regions_to_record = {}
 
+# This is the data dir for inside a container
+
 data_dir = '/app/ZKillQueryData/'
+
+# But if you are running it from the command line
+# Put all the data in $HOME/ZKillQueryData and this will adjust for that.
 
 if not os.path.exists(data_dir):
     # The datadir does not exist, alternative path is $HOME/ZKillQueryData
@@ -319,7 +324,10 @@ if __name__ == "__main__":
             response = requests.get("https://zkillredisq.stream/listen.php?queueID=" + config["redis_queue_name"], stream=True)
             response.raise_for_status()
             data = response.json()
-            logging.info(data)
+            pretty_json = json.dumps(data, indent=4)
+            logging.info("BEFORE PRETTY JSON")
+            logging.info(pretty_json)
+            logging.info("AFTER PRETTY JSON")
             insert_zkill(conn, data)
         except requests.exceptions.RequestException as e:
             print(f"Network error: {e} - Retrying in 10 seconds...")
