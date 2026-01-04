@@ -56,9 +56,7 @@ Here is an example of the config.json file you need to create.
 `./zkill_producer.py` in one terminal
 `./zkill_consumer.py` in another
 
-Run producer and consumer concurrently for real-time processing.
-
-# Make sure you have $HOME/ZKillQueryData setup
+Run producer and consumer concurrently for real-time processing.  Make sure you have $HOME/ZKillQueryData setup
 
 It needs:
 
