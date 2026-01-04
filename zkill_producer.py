@@ -44,7 +44,7 @@ if __name__ == "__main__":
     try:
         Path(queue_dir).mkdir(parents=True, exist_ok=True)
     except Exception as e:  # Catch-all for unexpected issues
-        logger.info (f"Unexpected exception creating directory, {e}")
+        logger.info(f"Unexpected exception creating directory, {e}")
         sys.exit(1)
 
     # Sit in a loop and accept notifications from Zkillmails RedisQ
@@ -52,7 +52,7 @@ if __name__ == "__main__":
     while True:
         try:
             logger.info("Waiting on Listener")
-            response = requests.get("https://zkillredisq.stream/listen.php?queueID=" + config["redis_queue_name"], stream=True)
+            response = requests.get("https://zkillredisq.stream/listen.php?queueID=" + config["redis_queue_name"], stream=True, timeout=180)
             logger.info("Response from Listener")
             response.raise_for_status()
             data = response.json()
