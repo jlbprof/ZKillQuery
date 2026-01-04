@@ -1,16 +1,11 @@
 #!/usr/bin/env python3
 
-import csv
 import json
 import os
 import sys
 
 import requests
 import time
-import datetime
-import sqlite3
-
-import logging
 
 from pathlib import Path
 from typing import Optional
@@ -25,7 +20,7 @@ config = {}
 # ==============================================
 if __name__ == "__main__":
     data_dir_path = get_data_dir()
-    data_dir = data_dir_path.as_posix() + "/"
+    data_dir = str(data_dir_path) + "/"
 
     log_file = data_dir + "zkill.log"
     logger = setup_logger ("zkill_listener", log_file=log_file, console=True)
@@ -46,6 +41,11 @@ if __name__ == "__main__":
         sys.exit(1)
 
     queue_dir = data_dir + "queue/"
+    try:
+        Path(queue_dir).mkdir(parents=True, exist_ok=True)
+    except Exception as e:  # Catch-all for unexpected issues
+        logger.info (f"Unexpected exception creating directory, {e}")
+        sys.exit(1)
 
     # Sit in a loop and accept notifications from Zkillmails RedisQ
 
@@ -63,12 +63,12 @@ if __name__ == "__main__":
             logger.info(filename)
             write_string_to_file(filename, pretty_json)
         except requests.exceptions.RequestException as e:
-            print(f"Network error: {e} - Retrying in 10 seconds...")
+            logger.info(f"Network error: {e} - Retrying in 10 seconds...")
             time.sleep(10)  # Backoff to avoid hammering the API
         except json.JSONDecodeError as e:
-            print(f"JSON decode error: {e} - Skipping...")
+            logger.info(f"JSON decode error: {e} - Skipping...")
             continue
         except Exception as e:  # Catch-all for unexpected issues
-            print(f"Unexpected error: {e}")
+            logger.info(f"Unexpected error: {e}")
             raise  # Re-raise to exit if critical, or handle as needed
 
