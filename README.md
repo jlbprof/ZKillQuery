@@ -5,7 +5,7 @@ This is a set of programs that monitor the output of zkillboards redis for kills
 
 ## What you need
 
-You need the following files from Fuzzworks, they don't change often but you should download them for yourself.
+You need the following files from Fuzzwork, they don't change often but you should download them for yourself.
 
 CSV Files you need to download into the main directory
 
@@ -43,7 +43,7 @@ Here is an example of the config.json file you need to create.
 ```
 
 - `redis_queue_name` is required by ZKill Redis to keep a queue for you
-- `regions`, are the regionID's that you are interested in.
+- `regions`, are the region IDs that you are interested in.
 - `db_fname`, is the sqlite db this is stored in.
 
 ## Notable Files
@@ -56,6 +56,8 @@ Here is an example of the config.json file you need to create.
 `./zkill_producer.py` in one terminal
 `./zkill_consumer.py` in another
 
+Run producer and consumer concurrently for real-time processing.
+
 # Make sure you have $HOME/ZKillQueryData setup
 
 It needs:
@@ -66,7 +68,7 @@ It needs:
 
 ## Observations
 
-The redis stream is a going forward only stream, if your monitor is off you will miss the kills during that time.
+The redis stream is a forward only stream, if your monitor is off you will miss the kills during that time.
 
 I think in the future I will either package this as a persistent container and run with docker, or as a systemd service.  It should just run all the time.
 
