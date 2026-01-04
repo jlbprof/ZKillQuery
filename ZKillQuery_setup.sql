@@ -68,7 +68,13 @@ CREATE INDEX IF NOT EXISTS time_based ON killmails (
 CREATE TABLE invGroups (
     groupID INTEGER PRIMARY KEY,
     categoryID INTEGER,
-    groupName TEXT
+    groupName TEXT,
+    iconID TEXT,
+    useBasePrice INTEGER,
+    anchored INTEGER,
+    anchorable INTEGER,
+    fittableNonSingleton INTEGER,
+    published INTEGER
 );
 CREATE INDEX idx_invGroups_categoryID ON invGroups (categoryID);
 CREATE INDEX idx_invGroups_groupName ON invGroups (groupName);
@@ -80,6 +86,7 @@ CREATE TABLE invCategories (
     published INTEGER
 );
 CREATE INDEX idx_invCategories_categoryName ON invCategories (categoryName);
+CREATE INDEX idx_invCategories_iconID ON invCategories (iconID);
 
 COMMIT TRANSACTION;
 PRAGMA foreign_keys = on;

@@ -5,4 +5,4 @@ CREATE TABLE invCategories (
     published INTEGER
 );
 CREATE INDEX idx_invCategories_categoryName ON invCategories (categoryName);
-
+CREATE INDEX idx_invCategories_iconID ON invCategories (iconID);

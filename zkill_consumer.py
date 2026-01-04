@@ -169,6 +169,28 @@ def load_solar_systems(conn):
 
     batch_insert(conn, 'solar_systems', ['solarSystemID', 'regionID', 'solarSystemName'], data)
 
+def load_invGroups(conn):
+    logger.info("Inserting invGroups")
+    csv_file_path = data_dir + 'invGroups.csv'
+    data = []
+    with open(csv_file_path, mode='r', encoding='utf-8') as csv_file:
+        csv_reader = csv.reader(csv_file)
+        headers = next(csv_reader)  # Get column names
+        for row in csv_reader:
+            data.append(tuple(row))
+    batch_insert(conn, 'invGroups', headers, data)
+
+def load_invCategories(conn):
+    logger.info("Inserting invCategories")
+    csv_file_path = data_dir + 'invCategories.csv'
+    data = []
+    with open(csv_file_path, mode='r', encoding='utf-8') as csv_file:
+        csv_reader = csv.reader(csv_file)
+        headers = next(csv_reader)  # Get column names
+        for row in csv_reader:
+            data.append(tuple(row))
+    batch_insert(conn, 'invCategories', headers, data)
+
 def insert_droppedItem(conn, typeID, flagID, quantity, killmail_id):
     sql = f"INSERT INTO droppedItems (typeID, flagID, quantity, killmail_id) VALUES (?,?,?,?)"
     
@@ -328,6 +350,8 @@ if __name__ == "__main__":
         load_invFlags(conn)
         load_regions(conn)
         load_solar_systems(conn)
+        load_invGroups(conn)
+        load_invCategories(conn)
 
     while True:
         try:
