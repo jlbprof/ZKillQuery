@@ -265,7 +265,7 @@ if __name__ == "__main__":
         regions_string = ', '.join(str(region) for region in config["regions"])
 
         logger.info(f"Regions of Interest: {regions_string}")
-        logger.info(f"DB Fname: {config[\"db_fname\"]}")
+        logger.info(f"DB Fname: {config['db_fname']}")
 
         for iRegion in config["regions"]:
             regions_to_record[str(iRegion)] = 1
@@ -322,7 +322,7 @@ if __name__ == "__main__":
 
             oldest_queued = get_file_from_queue(queue_dir)
             if oldest_queued:
-                logger.info(f"Oldest Queued {oldest_queued}"))
+                logger.info(f"Oldest Queued {oldest_queued}")
 
                 data = json.loads(oldest_queued.read_text())
                 killID = data['package']['killID']
@@ -332,14 +332,14 @@ if __name__ == "__main__":
                 url = url_template.format(zkillID=killID, hash=kill_hash)
                 logger.info(f"Killmail info for url {killID} {kill_hash} {url}")
 
-                response = requests.get(url)
+                response = requests.get(url, timeout=30)
                 response.raise_for_status()
 
                 data = response.json ()
                 insert_zkill(conn, data)
 
                 oldest_queued.unlink()
-                logger.info(f"DELETED  ******** {oldest_queued}"))
+                logger.info(f"DELETED  ******** {oldest_queued}")
             else:
                 logger.info("Queue is empty, sleeping ...")
                 time.sleep(10)
