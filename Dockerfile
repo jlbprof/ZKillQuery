@@ -6,6 +6,9 @@ RUN apt-get install -y git
 RUN rm -rf /var/lib/apt/lists/*
 
 RUN git clone https://github.com/jlbprof/ZKillQuery.git /app/ZKillQuery
+RUN ls -la /app
+RUN ls -la /app/ZKillQuery
+
 RUN mkdir -p /app/ZKillQueryData
 
 WORKDIR /app/ZKillQuery
