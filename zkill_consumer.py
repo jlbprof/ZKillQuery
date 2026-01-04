@@ -215,7 +215,9 @@ def insert_killmail(conn, killmail_id, xtime, solarSystemID, ship_type_id):
     except sqlite3.Error as e:
         conn.rollback()
         logger.info(f"ERROR E {e}")
-        raise e
+        return 1
+
+    return 0
 
 def insert_zkill(conn, data):
     try:
@@ -243,7 +245,10 @@ def insert_zkill(conn, data):
             logger.info(f"Recording {region}")
             logger.info("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 
-        insert_killmail(conn, int(killmail_id), str(killmail_time), int(solar_system_id), int(ship_type_id))
+        ret = insert_killmail(conn, int(killmail_id), str(killmail_time), int(solar_system_id), int(ship_type_id))
+        if ret == 1:
+            logger.info(f"Not Recorded {region}")
+            return
 
         for item in items_list:
             item_type_id = item["item_type_id"]
