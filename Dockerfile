@@ -14,7 +14,9 @@ WORKDIR /app/ZKillQuery
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
-RUN ls -la /app
-RUN ls -la /app/ZKillQuery
-RUN ls -la /app/ZKillQuery/zkill_producer.py
+RUN ls -l /app
+RUN ls -l /app/ZKillQuery
+RUN ls -l /app/ZKillQuery/zkill_producer.py
+RUN ls -l /app/ZKillQuery/zkill_consumer.py
+
 
