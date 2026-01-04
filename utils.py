@@ -75,7 +75,7 @@ def get_data_dir(
     
     if container_dir.exists():
         print(f"DATA_DIR is {container_dir}")
-        return container_dir.as_posix()
+        return container_dir
     
     # Fallback to local home directory
     home = os.getenv('HOME')
@@ -88,7 +88,8 @@ def get_data_dir(
     if local_dir.exists():
         print(f"DATA_DIR is {local_dir}")
         data_dir = local_dir.as_posix() + "/"
-        return data_dir
+        dir = Path(data_dir)
+        return dir
     
     # Neither exists
     print(f"Unable to access data directory.")
@@ -114,18 +115,16 @@ def write_string_to_file(filename: str, content: str) -> None:
     with open(filename, 'w', encoding='utf-8') as f:
         f.write(content)
 
-from pathlib import Path
-
 def get_file_from_queue(directory: str | Path) -> Path | None:
     """
-    Returns the alphabetically latest (last when sorted) file in the directory,
+    Returns the alphabetically oldest file in the directory,
     or None if the directory is empty or contains no files.
     
     Args:
         directory: Path to the directory
         
     Returns:
-        Path to the latest file, or None if no files
+        Path to the oldest file, or None if no files
     """
     dir_path = Path(directory)
     
@@ -136,7 +135,6 @@ def get_file_from_queue(directory: str | Path) -> Path | None:
     files_only = [f for f in files if f.is_file()]
     
     if not files_only:
-        print(f"No files found in directory: {dir_path}")
         # You can return None, raise an exception, or do something else here
         return None
     
