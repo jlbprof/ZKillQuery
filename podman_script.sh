@@ -3,7 +3,8 @@
 set -x
 
 podman-compose down || true
-podman images | grep zkill | awk '{print $3}' | xargs podman rmi || true
+podman images | grep zkill | awk '{print $3}' | xargs podman rmi -f || true
+podman images | grep zkill | awk '{print $1}' | xargs podman rmi -f || true
 
 podman-compose build
 podman-compose up -d
