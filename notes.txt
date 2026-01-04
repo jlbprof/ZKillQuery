@@ -1,5 +1,4 @@
 
-They exist here, and perhaps need to be modified.
+Updated zkill_consumer.py, it is currently broken.
 
-https://www.fuzzwork.co.uk/dump/latest/
-
+I am trying to find a way to upload the csv for groups and categories

@@ -21,6 +21,8 @@ flags_dict = {}
 solar_systems_dict = {}
 regions_dict = {}
 regions_to_record = {}
+groups_dict = {}
+categories_dict = {}
 
 def create_database_connection(db_path: str) -> sqlite3.Connection:
     """Create and return a connection to the SQLite database."""
@@ -91,6 +93,15 @@ def csv_to_dict(csv_file_path, id_is_which_column):
             item_dict[item_id] = row  # Store full row
     return item_dict
 
+def csv_to_dict_try(csv_file_path, id_is_which_column, logger):
+    item_dict = {}
+    try:
+        item_dict = csv_to_dict(csv_file_path, id_is_which_column)
+    except Exception as e:
+        logger.info(f"Unable to load {csv_file_path}")
+        pass
+    return item_dict
+        
 def batch_insert(conn, table, columns, data):
     """
     conn: SQLite connection
@@ -278,10 +289,12 @@ if __name__ == "__main__":
 
     # Load the tables
 
-    items_dict = csv_to_dict(data_dir + 'invTypes.csv',0)
-    flags_dict = csv_to_dict(data_dir + 'invFlags.csv',0)
-    solar_systems_dict = csv_to_dict(data_dir + 'mapSolarSystems.csv',2)
-    regions_dict = csv_to_dict(data_dir + 'mapRegions.csv',0)
+    items_dict = csv_to_dict_try(data_dir + 'invTypes.csv',0,logger)
+    flags_dict = csv_to_dict_try(data_dir + 'invFlags.csv',0,logger)
+    solar_systems_dict = csv_to_dict_try(data_dir + 'mapSolarSystems.csv',2,logger)
+    regions_dict = csv_to_dict_try(data_dir + 'mapRegions.csv',0,logger)
+    groups_dict = csv_to_dict_try(data_dir + 'invGroups.csv',0,logger)
+    categories_dict = csv_to_dict_try(data_dir + 'invCategories.csv',0,logger)
 
     # Do we need to create the database?
 
@@ -298,13 +311,13 @@ if __name__ == "__main__":
                 created = True
             else:
                 logger.info("Failed to initialize database.")
-                exit(1)
+                sys.exit(1)
         except KeyboardInterrupt:
             logger.info("\nOperation cancelled by user.")
-            exit(1)
+            sys.exit(1)
         except Exception as e:
             logger.info(f"An unexpected error occurred: {e}")
-            exit(1)
+            sys.exit(1)
     else:
         logger.info("Database already exists")
 
