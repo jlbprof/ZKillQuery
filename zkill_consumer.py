@@ -7,11 +7,9 @@ import sys
 
 import requests
 import time
-import datetime
 import sqlite3
 
 from pathlib import Path
-from typing import Optional
 
 from utils import setup_logger, get_data_dir, generate_timestamp, write_string_to_file, get_file_from_queue
 
@@ -74,10 +72,10 @@ def initialize_database(db_path: str, sql_file: str) -> bool:
         return False
 
     try:
-        logger.info("Initializing database at " + sql_file)
+        logger.info(f"Initializing database at {sql_file}")
         conn = create_database_connection(db_path)
         success = execute_sql_file(conn, sql_path)
-        logger.info("Initialized successfully " + str(success))
+        logger.info(f"Initialized successfully {success}")
         return success
     finally:
         if 'conn' in locals():
@@ -170,7 +168,7 @@ def insert_droppedItem(conn, typeID, flagID, quantity, killmail_id):
         return cursor.rowcount
     except sqlite3.Error as e:
         conn.rollback()
-        logger.info("ERROR E", e)
+        logger.info(f"ERROR E {e}")
         raise e
 
 def insert_killmail(conn, killmail_id, xtime, solarSystemID, ship_type_id):
@@ -183,7 +181,7 @@ def insert_killmail(conn, killmail_id, xtime, solarSystemID, ship_type_id):
         return cursor.rowcount
     except sqlite3.Error as e:
         conn.rollback()
-        logger.info("ERROR E", e)
+        logger.info(f"ERROR E {e}")
         raise e
 
 def insert_zkill(conn, data):
@@ -202,14 +200,14 @@ def insert_zkill(conn, data):
         ship_type_name    = items_dict[str(ship_type_id)][2]
 
         message = ship_type_name + " Killed in " + solar_system_name + "/" + region_name
-        logger.info (message)
+        logger.info(message)
 
         if not region in regions_to_record:
-            logger.info("Not Recorded " + region)
+            logger.info(f"Not Recorded {region}")
             return
         else:
             logger.info("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-            logger.info("Recording" + region)
+            logger.info(f"Recording {region}")
             logger.info("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 
         insert_killmail(conn, int(killmail_id), str(killmail_time), int(solar_system_id), int(ship_type_id))
@@ -261,12 +259,13 @@ if __name__ == "__main__":
             logger.info(f"Error loading config: {e}")
             sys.exit(1)
 
-        logger.info("Redis Queue: " + config["redis_queue_name"])
+        redis_queue_name = config["redis_queue_name"]
+        logger.info(f"Redis Queue: {redis_queue_name}")
 
         regions_string = ', '.join(str(region) for region in config["regions"])
 
-        logger.info("Regions of Interest: " + regions_string)
-        logger.info("DB FName:" + config["db_fname"])
+        logger.info(f"Regions of Interest: {regions_string}")
+        logger.info(f"DB FName: {config[\"db_fname\"}")
 
         for iRegion in config["regions"]:
             regions_to_record[str(iRegion)] = 1
@@ -323,7 +322,7 @@ if __name__ == "__main__":
 
             oldest_queued = get_file_from_queue(queue_dir)
             if oldest_queued:
-                logger.info("Oldest Queued " + oldest_queued.as_posix())
+                logger.info(f"Oldest Queued {oldest_queued}"))
 
                 data = json.loads(oldest_queued.read_text())
                 killID = data['package']['killID']
@@ -331,29 +330,27 @@ if __name__ == "__main__":
 
                 url_template = "https://esi.evetech.net/latest/killmails/{zkillID}/{hash}/"
                 url = url_template.format(zkillID=killID, hash=kill_hash)
-                logger.info("Killmail info for url " + str(killID) + " " + kill_hash + " " + url)
+                logger.info(f"Killmail info for url {killID} {kill_hash} {url}")
 
                 response = requests.get(url)
                 response.raise_for_status()
-
-                #print(response.text)
 
                 data = response.json ()
                 insert_zkill(conn, data)
 
                 oldest_queued.unlink()
-                logger.info("DELETED  ******** " + oldest_queued.as_posix())
+                logger.info(f"DELETED  ******** {oldest_queued}"))
             else:
                 logger.info("Queue is empty, sleeping ...")
                 time.sleep(10)
 
         except requests.exceptions.RequestException as e:
-            print(f"Network error: {e} - Retrying in 10 seconds...")
+            logger.info(f"Network error: {e} - Retrying in 10 seconds...")
             time.sleep(10)  # Backoff to avoid hammering the API
         except json.JSONDecodeError as e:
-            print(f"JSON decode error: {e} - Skipping...")
+            logger.info(f"JSON decode error: {e} - Skipping...")
             continue
         except Exception as e:  # Catch-all for unexpected issues
-            print(f"Unexpected error: {e}")
+            logger.info(f"Unexpected error: {e}")
             raise  # Re-raise to exit if critical, or handle as needed
 
