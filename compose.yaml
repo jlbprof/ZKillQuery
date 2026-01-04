@@ -4,12 +4,12 @@ services:
     build: .
     command: python3 zkill_producer.py
     volumes:
-      - ./ZKillQueryData:/app/ZKillQueryData
+      - ../ZKillQueryData:/app/ZKillQueryData
     restart: unless-stopped
   zkill_consumer:
     build: .
     command: python3 zkill_consumer.py
     volumes:
-      - ./ZKillQueryData:/app/ZKillQueryData
+      - ../ZKillQueryData:/app/ZKillQueryData
     restart: unless-stopped
 
