@@ -1,18 +1,6 @@
-The information from Redis gets me the zkillid and hash.  I can then do the call in the get_items_dropped.sh and all the information I
-used to get from redis is available there, so almost all the code could be transferred there.
+I need to re download the csv files.
 
-This Python code can give me a sortable timestamp down to the microsecond which should be sufficent.
+They exist here, and perhaps need to be modified.
 
-import datetime
-import time
-
-# Option 1: Preferred - Use datetime with microsecond precision (recommended)
-now = datetime.datetime.now(datetime.UTC)  # or .now() for local time
-sortable_timestamp = now.strftime("%Y-%m-%d-%H-%M-%S-%f")  # .%f gives microseconds
-
-print(sortable_timestamp)
-
-
-https://esi.evetech.net/latest/killmails/{zkillID}/{hash}/
-
+https://www.fuzzwork.co.uk/dump/latest/
 
