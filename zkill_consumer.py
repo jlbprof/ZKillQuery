@@ -265,7 +265,7 @@ if __name__ == "__main__":
         regions_string = ', '.join(str(region) for region in config["regions"])
 
         logger.info(f"Regions of Interest: {regions_string}")
-        logger.info(f"DB FName: {config[\"db_fname\"}")
+        logger.info(f"DB Fname: {config[\"db_fname\"]}")
 
         for iRegion in config["regions"]:
             regions_to_record[str(iRegion)] = 1
