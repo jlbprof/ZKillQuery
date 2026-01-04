@@ -1,5 +1,0 @@
-#!/bin/bash
-
-./ZKillQuery.py
-
-

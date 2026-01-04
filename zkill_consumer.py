@@ -217,18 +217,28 @@ def insert_zkill(conn, data):
         for item in items_list:
             item_type_id = item["item_type_id"]
             flag_id = item["flag"]
-            x = items_dict[str(item_type_id)]
-            item_name    = items_dict[str(item_type_id)][2]
-            quantity     = 0
-            if 'quantity_destroyed' in item:
-                quantity = item["quantity_destroyed"]
-            else:
-                quantity = item["quantity_dropped"]
 
-            count = insert_droppedItem(conn, item_type_id, flag_id, quantity, killmail_id)
+            try:
+                x = items_dict[str(item_type_id)]
+                item_name    = items_dict[str(item_type_id)][2]
+                quantity     = 0
+                if 'quantity_destroyed' in item:
+                    quantity = item["quantity_destroyed"]
+                else:
+                    quantity = item["quantity_dropped"]
+
+                count = insert_droppedItem(conn, item_type_id, flag_id, quantity, killmail_id)
+            except KeyError as e:
+                logger.info(f"Unable to find Key: {e}")
+                pass
 
     except json.JSONDecodeError as e:
         logger.info(f"Invalid JSON: {e}")
+        logger.info("Skipping line")
+        return
+
+    except KeyError as e:
+        logger.info(f"Unable to determine ship type: {e}")
         logger.info("Skipping line")
         return
 
@@ -330,7 +340,7 @@ if __name__ == "__main__":
                 insert_zkill(conn, data)
 
                 oldest_queued.unlink()
-                logger.info("Deleted " + oldest_queued.as_posix())
+                logger.info("DELETED  ******** " + oldest_queued.as_posix())
             else:
                 logger.info("Queue is empty, sleeping ...")
                 time.sleep(10)

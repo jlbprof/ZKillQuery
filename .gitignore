@@ -6,3 +6,5 @@ db_zkill_query.db
 output.txt
 report.txt
 __pycache__
+doit.sh
+
