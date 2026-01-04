@@ -188,18 +188,21 @@ def insert_killmail(conn, killmail_id, xtime, solarSystemID, ship_type_id):
 
 def insert_zkill(conn, data):
     try:
-        killmail_id = data["package"]["killmail"]["killmail_id"]
-        killmail_time = data["package"]["killmail"]["killmail_time"]
-        solar_system_id = str(data["package"]["killmail"]["solar_system_id"])
-        ship_type_id    = str(data["package"]["killmail"]["victim"]["ship_type_id"])
+        killmail_id = data["killmail_id"]
+        killmail_time = data["killmail_time"]
+        solar_system_id = str(data["solar_system_id"])
+        ship_type_id    = str(data["victim"]["ship_type_id"])
 
-        items_list      = data["package"]["killmail"]["victim"]["items"]
+        items_list      = data["victim"]["items"]
 
         solar_system_name = solar_systems_dict[str(solar_system_id)][3]
         region            = str(solar_systems_dict[str(solar_system_id)][0])
         region_name       = regions_dict[region][1]
 
-        logger.info("KILL " + "Ship: (" + items_dict[str(ship_type_id)][2] + ") " + "System: (" + solar_system_name + ")", "Region: (" + region_name + ")")
+        ship_type_name    = items_dict[str(ship_type_id)][2]
+
+        message = ship_type_name + " Killed in " + solar_system_name + "/" + region_name
+        logger.info (message)
 
         if not region in regions_to_record:
             logger.info("Not Recorded " + region)
@@ -321,6 +324,10 @@ if __name__ == "__main__":
                 response = requests.get(url)
                 response.raise_for_status()
 
+                #print(response.text)
+
+                data = response.json ()
+                insert_zkill(conn, data)
 
                 oldest_queued.unlink()
                 logger.info("Deleted " + oldest_queued.as_posix())
