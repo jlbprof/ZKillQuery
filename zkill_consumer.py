@@ -247,7 +247,7 @@ def insert_zkill(conn, data):
 # ==============================================
 if __name__ == "__main__":
     data_dir_path = get_data_dir()
-    data_dir = data_dir_path.as_posix()
+    data_dir = data_dir_path.as_posix() + "/"
 
     log_file = data_dir + "zkill.log"
     logger = setup_logger ("zkill_listener", log_file=log_file, console=True)

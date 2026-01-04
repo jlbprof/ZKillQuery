@@ -3,7 +3,6 @@
 import logging
 import sys
 import os
-import time
 
 from datetime import datetime, timezone
 
@@ -86,10 +85,7 @@ def get_data_dir(
     local_dir = Path(local_path) if local_path else Path(home) / "ZKillQueryData"
     
     if local_dir.exists():
-        print(f"DATA_DIR is {local_dir}")
-        data_dir = local_dir.as_posix() + "/"
-        dir = Path(data_dir)
-        return dir
+        return local_dir
     
     # Neither exists
     print(f"Unable to access data directory.")
@@ -138,7 +134,6 @@ def get_file_from_queue(directory: str | Path) -> Path | None:
         # You can return None, raise an exception, or do something else here
         return None
     
-    latest_file = files_only[0]
-    return latest_file
-
+    oldest_file = files_only[0]
+    return oldest_file
 
