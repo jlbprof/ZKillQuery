@@ -13,12 +13,18 @@ CSV Files you need to download into the main directory
 - https://www.fuzzwork.co.uk/dump/latest/invFlags.csv
 - https://www.fuzzwork.co.uk/dump/latest/mapSolarSystems.csv
 - https://www.fuzzwork.co.uk/dump/latest/mapRegions.csv
+- https://www.fuzzwork.co.uk/dump/latest/invGroups.csv
+- https://www.fuzzwork.co.uk/dump/latest/invCategories.csv
+
+I added a directory csvDownloads with a script to perform the downloads.  You need to manually copy
+them to your data directory.
 
 These files are git ignored.
 
-## Program
+## Programs
 
-- ZKillQuery.py
+- zkill_producer.py
+- zkill_consumer.py
 
 ### Pip Install
 
@@ -40,27 +46,27 @@ Here is an example of the config.json file you need to create.
 - `regions`, are the regionID's that you are interested in.
 - `db_fname`, is the sqlite db this is stored in.
 
-## Files
+## Notable Files
 
-- `ZKillQuery.py`, is the program
 - `ZKillQuery.db`, is a db I use to play with the schema
 - `ZKillQuery_setup.sql`, is the schema file used to initialize the database
 
 ## To Run
 
-If you are just testing use `./test_init.sh` it will give you a new database.  Otherwise `./test.sh`.
+`./zkill_producer.py` in one terminal
+`./zkill_consumer.py` in another
 
-`Cntrl-C` is the primary way to stop this.
+# Make sure you have $HOME/ZKillQueryData setup
+
+It needs:
+
+- config.json
+- *.csv (see csvDownloads dir)
+- and a queue directory
 
 ## Observations
 
 The redis stream is a going forward only stream, if your monitor is off you will miss the kills during that time.
 
 I think in the future I will either package this as a persistent container and run with docker, or as a systemd service.  It should just run all the time.
-
-## Notes:
-
-`run_studio.sh` - I use to launch SQLiteStudio to observe the db in action.
-
-I have not created any indices yet for this database as I am not sure how I am going to be querying it.   That is to come.
 
