@@ -7,7 +7,7 @@ RUN apt-get install -y git
 RUN rm -rf /var/lib/apt/lists/*
 RUN mkdir -p /app/ZKillQueryData
 
-RUN git clone --branch use_a_container https://github.com/jlbprof/ZKillQuery.git /app/ZKillQuery
+RUN git clone https://github.com/jlbprof/ZKillQuery.git /app/ZKillQuery
 
 WORKDIR /app/ZKillQuery
 
