@@ -54,7 +54,7 @@ def execute_sql_file(conn: sqlite3.Connection, sql_file: Path) -> bool:
         return False
     except Exception as e:
         conn.rollback()
-        logger.info(f"Unexpected error: {e}")
+        logger.info(f"Unexpected error: 001 {e}")
         return False
 
 def validate_sql_file(sql_file: Path) -> bool:
@@ -395,6 +395,6 @@ if __name__ == "__main__":
             logger.info(f"JSON decode error: {e} - Skipping...")
             continue
         except Exception as e:  # Catch-all for unexpected issues
-            logger.info(f"Unexpected error: {e}")
+            logger.info(f"Unexpected error: 002 {e}")
             raise  # Re-raise to exit if critical, or handle as needed
 
