@@ -64,9 +64,68 @@ It needs:
 - *.csv (see csvDownloads dir)
 - and a queue directory
 
-## Observations
+## Container Setup with Podman Compose
 
-The redis stream is a forward only stream, if your monitor is off you will miss the kills during that time.
+To run in containers:
 
-I think in the future I will either package this as a persistent container and run with docker, or as a systemd service.  It should just run all the time.
+1. Ensure `compose.yaml` is present (example below).
+2. `podman-compose build`
+3. `podman-compose up -d` (detached mode).
+
+Example `compose.yaml`:
+```yaml
+version: '3.8'
+services:
+  zkill_producer:
+    build: .
+    command: python zkill_producer.py
+   volumes:
+      - ./ZKillQueryData:/app/ZKillQueryData
+    restart: unless-stopped
+
+  zkill_consumer:
+    build: .
+    command: python zkill_consumer.py
+    volumes:
+      - ./ZKillQueryData:/app/ZKillQueryData
+    restart: unless-stopped
+
+Requires Dockerfile in the repo root.
+
+## Systemd Auto-Start
+
+For auto-start on boot, create ~/.config/systemd/user/podman-compose-zkill.service:
+
+
+[Unit]
+Description=ZKill Podman Compose
+After=network.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=podman-compose -f %h/ZKillQuery/compose.yaml up -d
+ExecStop=podman-compose -f %h/ZKillQuery/compose.yaml down
+WorkingDirectory=%h/ZKillQuery
+
+[Install]
+WantedBy=default.target
+
+
+Then:
+- systemctl --user daemon-reload
+- systemctl --user enable podman-compose-zkill
+- systemctl --user start podman-compose-zkill
+
+%h is the user's home directory.
+
+## Cleanup
+
+To stop and clean: podman-compose down --rmi local || true
+
+ It needs:
+ 
+ - config.json
+ 
+I have implemented containerization with podman compose and systemd auto-start as described above.
 
