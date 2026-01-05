@@ -5,5 +5,7 @@ set -x
 ./podman_cleanup.sh
 
 podman-compose build
-podman-compose up -d
+
+# No longer necessary if you are using systemd
+#podman-compose up -d
 
