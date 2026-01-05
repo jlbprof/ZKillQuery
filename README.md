@@ -89,6 +89,7 @@ services:
     volumes:
       - ./ZKillQueryData:/app/ZKillQueryData
     restart: unless-stopped
+```
 
 Requires Dockerfile in the repo root.
 
@@ -96,7 +97,7 @@ Requires Dockerfile in the repo root.
 
 For auto-start on boot, create ~/.config/systemd/user/podman-compose-zkill.service:
 
-
+```
 [Unit]
 Description=ZKill Podman Compose
 After=network.target
@@ -110,6 +111,7 @@ WorkingDirectory=%h/ZKillQuery
 
 [Install]
 WantedBy=default.target
+```
 
 
 Then:
