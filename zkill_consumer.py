@@ -11,7 +11,7 @@ import sqlite3
 
 from pathlib import Path
 
-from utils import setup_logger, get_data_dir, generate_timestamp, write_string_to_file, get_file_from_queue
+from utils import setup_logger, get_data_dir, generate_timestamp, write_string_to_file, get_file_from_queue, load_config
 
 # global variables
 config = {}
@@ -291,29 +291,17 @@ if __name__ == "__main__":
     log_file = data_dir + "zkill.log"
     logger = setup_logger ("zkill_listener", log_file=log_file, console=True)
 
-    if os.path.exists(data_dir + 'config.json'):
-        logger.info("Config Exists")
-        try:
-            with open(data_dir + 'config.json', 'r', encoding='utf-8') as file:
-                config = json.load(file)
-        except (FileNotFoundError, json.JSONDecodeError) as e:
-            logger.info(f"Error loading config: {e}")
-            sys.exit(1)
+    config = load_config(data_dir, logger)
+    redis_queue_name = config["redis_queue_name"]
+    logger.info(f"Redis Queue: {redis_queue_name}")
 
-        redis_queue_name = config["redis_queue_name"]
-        logger.info(f"Redis Queue: {redis_queue_name}")
+    regions_string = ', '.join(str(region) for region in config["regions"])
 
-        regions_string = ', '.join(str(region) for region in config["regions"])
+    logger.info(f"Regions of Interest: {regions_string}")
+    logger.info(f"DB Fname: {config['db_fname']}")
 
-        logger.info(f"Regions of Interest: {regions_string}")
-        logger.info(f"DB Fname: {config['db_fname']}")
-
-        for iRegion in config["regions"]:
-            regions_to_record[str(iRegion)] = 1
-
-    else:
-        logger.info("config.json does not exist")
-        sys.exit(1)
+    for iRegion in config["regions"]:
+        regions_to_record[str(iRegion)] = 1
 
     queue_dir = data_dir + "queue/"
 

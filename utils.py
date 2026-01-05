@@ -3,6 +3,7 @@
 import logging
 import sys
 import os
+import json
 
 from datetime import datetime, timezone
 
@@ -136,4 +137,23 @@ def get_file_from_queue(directory: str | Path) -> Path | None:
     
     oldest_file = files_only[0]
     return oldest_file
+
+def load_config(data_dir, logger): 
+    config = {}
+
+    if os.path.exists(data_dir + 'config.json'):
+        config_fname = data_dir + 'config.json'
+        logger.info("Config Exists :" + config_fname + ":")
+        try:
+            with open(config_fname, 'r', encoding='utf-8') as file:
+                config = json.load(file)
+        except Exception as e:
+            logger.info(f"Error loading config: {e}")
+            sys.exit(1)
+
+    else:
+        logger.info("config.json does not exist")
+        sys.exit(1)
+
+    return config
 

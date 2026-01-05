@@ -10,7 +10,7 @@ import time
 from pathlib import Path
 from typing import Optional
 
-from utils import setup_logger, get_data_dir, generate_timestamp, write_string_to_file
+from utils import setup_logger, get_data_dir, generate_timestamp, write_string_to_file, load_config
 
 # global variables
 config = {}
@@ -25,20 +25,7 @@ if __name__ == "__main__":
     log_file = data_dir + "zkill.log"
     logger = setup_logger ("zkill_listener", log_file=log_file, console=True)
 
-    if os.path.exists(data_dir + 'config.json'):
-        logger.info("Config Exists")
-        try:
-            with open(data_dir + 'config.json', 'r', encoding='utf-8') as file:
-                config = json.load(file)
-        except (FileNotFoundError, json.JSONDecodeError) as e:
-            logger.info(f"Error loading config: {e}")
-            sys.exit(1)
-
-        logger.info("Redis Queue: " + config["redis_queue_name"])
-
-    else:
-        logger.info("config.json does not exist")
-        sys.exit(1)
+    config = load_config(data_dir, logger)
 
     queue_dir = data_dir + "queue/"
     try:
