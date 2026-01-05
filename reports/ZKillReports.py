@@ -8,6 +8,8 @@ import sys
 from dateutil.parser import isoparse
 from datetime import timedelta
 
+from utils import get_data_dir
+
 def convertISOTime(isotime):
     date_obj = isoparse(isotime)
     return date_obj
@@ -18,22 +20,6 @@ def daysInPast(date_obj, xdays):
 
 def convertToIso(date_obj):
     return date_obj.isoformat()
-
-def loadConfig():
-    if os.path.exists('config.json'):
-        try:
-            with open('config.json', 'r', encoding='utf-8') as file:
-                config = json.load(file)
-        except (FileNotFoundError, json.JSONDecodeError) as e:
-            print(f"Error loading config: {e}")
-            sys.exit(1)
-
-    else:
-        print("config.json does not exist")
-        sys.exit(1)
-
-    return config
-
 
 if __name__ == "__main__":
     my_iso = '2025-08-04T01:23:20Z'

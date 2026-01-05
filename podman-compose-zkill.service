@@ -1,0 +1,11 @@
+ [Unit]
+   Description=ZKill Podman Compose
+   After=network.target
+[Service]
+   Type=oneshot
+   RemainAfterExit=yes
+   ExecStart=podman-compose -f %h/ZKillQuery/compose.yaml up -d
+   ExecStop=podman-compose -f %h/ZKillQuery/compose.yaml down
+   WorkingDirectory=%h/ZKillQuery
+[Install]
+   WantedBy=default.target

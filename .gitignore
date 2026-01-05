@@ -1,12 +1,10 @@
-invFlags.csv
-invTypes.csv
-mapRegions.csv
-mapSolarSystems.csv
+*.csv
 output.jsonl
 config.json
-db_output.csv
 ZKillQuery.db
 db_zkill_query.db
 output.txt
 report.txt
 __pycache__
+doit.sh
+

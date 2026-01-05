@@ -1,14 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from ZKillReports import convertISOTime, daysInPast, convertToIso, loadConfig
+from ZKillReports import convertISOTime, daysInPast, convertToIso
 from datetime import datetime
 
 import sqlite3
 
+from utils import get_data_dir, load_config, setup_logger
+
+config = {}
+db_fname = ""
+
 def get_modules_destroyed(myconfig, past_date):
     try:
-        with sqlite3.connect(myconfig["db_fname"]) as conn:
+        with sqlite3.connect(db_fname) as conn:
             conn.row_factory = sqlite3.Row  # Enable dictionary-like access
             cursor = conn.cursor()
             
@@ -38,12 +43,22 @@ def get_modules_destroyed(myconfig, past_date):
 
 
 if __name__ == "__main__":
+    data_dir_path = get_data_dir()
+    data_dir = str(data_dir_path) + "/"
+
+    print(f"Data Dir :{data_dir}:")
+
+    log_file = data_dir + "zkill.log"
+    logger = setup_logger ("report_modules_lost_48hours", log_file=log_file, console=True)
+
+    config = load_config(data_dir, logger)
+    db_fname = data_dir + config["db_fname"]
+
     now_time = datetime.now ()
     time_48hoursago = daysInPast(now_time, 2)
     iso_48hoursago = convertToIso(time_48hoursago);
-    myconfig = loadConfig()
     
-    my_results = get_modules_destroyed(myconfig, iso_48hoursago)
+    my_results = get_modules_destroyed(config, iso_48hoursago)
 
     print("%-50.50s %20.20s" % ("Module/Ammo", "Quantity"))
 

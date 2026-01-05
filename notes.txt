@@ -1,0 +1,4 @@
+
+Updated zkill_consumer.py, it is currently broken.
+
+I am trying to find a way to upload the csv for groups and categories

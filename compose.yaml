@@ -1,0 +1,15 @@
+version: '3.8'
+services:
+  zkill_producer:
+    build: .
+    command: python3 zkill_producer.py
+    volumes:
+      - ../ZKillQueryData:/app/ZKillQueryData
+    restart: unless-stopped
+  zkill_consumer:
+    build: .
+    command: python3 zkill_consumer.py
+    volumes:
+      - ../ZKillQueryData:/app/ZKillQueryData
+    restart: unless-stopped
+
