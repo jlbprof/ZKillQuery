@@ -121,9 +121,15 @@ Then:
 
 %h is the user's home directory.
 
+A convenience script provided.
+
+`./podman_script.sh`
+
 ## Cleanup
 
-To stop and clean: podman-compose down --rmi local || true
+To stop and clean:
+
+`./podman_cleanup.sh`
 
  It needs:
  
