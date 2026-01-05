@@ -206,7 +206,7 @@ def insert_droppedItem(conn, typeID, flagID, quantity, killmail_id):
 
 def insert_killmail(conn, killmail_id, xtime, solarSystemID, ship_type_id):
     sql = f"INSERT INTO killmails (killmail_id, time, solarSystemID, ship_type_id) VALUES (?,?,?,?)"
-    
+   
     cursor = conn.cursor()
     try:
         cursor.execute(sql, [killmail_id, xtime, solarSystemID, ship_type_id])
@@ -215,8 +215,9 @@ def insert_killmail(conn, killmail_id, xtime, solarSystemID, ship_type_id):
     except sqlite3.Error as e:
         conn.rollback()
         logger.info(f"ERROR X {e}")
-        return 1
+        return 0
 
+    logger.info("Unexpected Error")
     return 0
 
 def insert_zkill(conn, data):
@@ -248,7 +249,7 @@ def insert_zkill(conn, data):
         ret = insert_killmail(conn, int(killmail_id), str(killmail_time), int(solar_system_id), int(ship_type_id))
         logger.info(f"RET :{ret}:")
 
-        if ret == 1:
+        if ret == 0:
             logger.info(f"Not Recorded {region}")
             return
 
@@ -368,9 +369,15 @@ if __name__ == "__main__":
             if oldest_queued:
                 logger.info(f"Oldest Queued {oldest_queued}")
 
-                data = json.loads(oldest_queued.read_text())
-                killID = data['package']['killID']
-                kill_hash = data['package']['zkb']['hash']
+                data =  json.loads(oldest_queued.read_text())
+
+                try:
+                    killID = data['package']['killID']
+                    kill_hash = data['package']['zkb']['hash']
+                except Exception as e:
+                    logger.info(f"Missing key in data: {e} - Skipping...")
+                    oldest_queued.unlink()
+                    continue
 
                 url_template = "https://esi.evetech.net/latest/killmails/{zkillID}/{hash}/"
                 url = url_template.format(zkillID=killID, hash=kill_hash)
