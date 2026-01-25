@@ -43,6 +43,11 @@ if __name__ == "__main__":
             logger.info("Response from Listener")
             response.raise_for_status()
             data = response.json()
+
+            if data.get("package") is None:
+                logger.info("Received null package - skipping ...")
+                continue
+
             pretty_json = json.dumps(data, indent=4)
             logger.info(pretty_json)
 
