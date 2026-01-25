@@ -18,15 +18,15 @@ services:
         condition: service_completed_successfully
         
   zkill_consumer:
-    image: zkillquery_zkill_consumer_fixed:latest
+    build: .
     command: python3 zkill_consumer.py
     volumes:
       - ../ZKillQueryData:/app/ZKillQueryData
     restart: unless-stopped
     environment:
-      - CONSUMER_ID=zkill_consumer_1
+      - CONTAINER_INDEX=${PODMAN_COMPOSE_CONTAINER_NUMBER}
     depends_on:
       zkill_db_init:
         condition: service_completed_successfully
     deploy:
-      replicas: 3  # Test 3 consumers
+      replicas: 3

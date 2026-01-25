@@ -389,7 +389,10 @@ if __name__ == "__main__":
     conn = create_database_connection(db_fname)
     logger.info("Database connected successfully")
 
-    consumer_id = os.getenv('CONSUMER_ID', f"consumer_{os.getpid()}")
+    container_index = os.getenv('CONTAINER_INDEX', '1')
+    hostname = os.getenv('HOSTNAME', 'unknown')
+    # Generate unique consumer ID from container index and hostname
+    consumer_id = f"zkill_consumer_{container_index}"
     
     # Add small random delay to stagger consumer startups
     import random
