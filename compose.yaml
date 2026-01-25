@@ -1,15 +1,33 @@
 version: '3.8'
 services:
+  zkill_db_init:
+    build: .
+    command: python3 -c "from zkill_consumer import init_database_only; init_database_only()"
+    volumes:
+      - ../ZKillQueryData:/app/ZKillQueryData
+    restart: "no"
+    
   zkill_producer:
     build: .
     command: python3 zkill_producer.py
     volumes:
       - ../ZKillQueryData:/app/ZKillQueryData
     restart: unless-stopped
+    depends_on:
+      zkill_db_init:
+        condition: service_completed_successfully
+        
   zkill_consumer:
     build: .
     command: python3 zkill_consumer.py
     volumes:
       - ../ZKillQueryData:/app/ZKillQueryData
     restart: unless-stopped
+    deploy:
+      replicas: 3
+    environment:
+      - CONSUMER_ID=${HOSTNAME}
+    depends_on:
+      zkill_db_init:
+        condition: service_completed_successfully
 

@@ -112,6 +112,42 @@ def write_string_to_file(filename: str, content: str) -> None:
     with open(filename, 'w', encoding='utf-8') as f:
         f.write(content)
 
+def claim_file_from_queue(directory: str | Path, consumer_id: str) -> Path | None:
+    """
+    Atomically claims the oldest file from the queue by renaming it.
+    This prevents multiple consumers from processing the same file.
+    
+    Args:
+        directory: Path to the queue directory
+        consumer_id: Unique identifier for the consumer
+        
+    Returns:
+        Path to the claimed file (with processing suffix), or None if no files available
+    """
+    import os
+    
+    dir_path = Path(directory)
+    
+    # Get pending files (not being processed) and sort them by name
+    files = sorted([
+        f for f in dir_path.iterdir() 
+        if f.is_file() and not f.name.startswith('.')
+    ])
+    
+    if not files:
+        return None
+    
+    oldest_file = files[0]
+    claimed_file = oldest_file.with_name(f"{oldest_file.name}.processing-{consumer_id}")
+    
+    try:
+        # Atomic rename - only one consumer can succeed
+        oldest_file.rename(claimed_file)
+        return claimed_file
+    except FileExistsError:
+        # Another consumer already claimed this file
+        return None
+
 def get_file_from_queue(directory: str | Path) -> Path | None:
     """
     Returns the alphabetically oldest file in the directory,

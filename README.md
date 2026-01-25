@@ -23,8 +23,9 @@ These files are git ignored.
 
 ## Programs
 
-- zkill_producer.py
-- zkill_consumer.py
+- zkill_producer.py - Fetches killmail data from zKillboard Redis queue
+- zkill_consumer.py - Processes killmails and stores in SQLite database
+- zkill_db_init() - Database initialization function (called by init container)
 
 ### Pip Install
 
@@ -53,6 +54,7 @@ Here is an example of the config.json file you need to create.
 
 ## To Run
 
+### Local Development
 `./zkill_producer.py` in one terminal
 `./zkill_consumer.py` in another
 
@@ -64,36 +66,33 @@ It needs:
 - *.csv (see csvDownloads dir)
 - and a queue directory
 
+### Container Setup (Recommended)
+The container setup includes:
+- **Multiple consumers** (3 by default) for parallel processing
+- **Database initialization** handled automatically by init container
+- **Race condition prevention** with atomic file operations
+- **Auto-scaling** - just change `replicas` in compose.yaml
+
 ## Container Setup with Podman Compose
 
 To run in containers:
 
-1. Ensure `compose.yaml` is present (example below).
+1. Ensure `compose.yaml` is present.
 2. `podman-compose build`
 3. `podman-compose up -d` (detached mode).
 
-Example `compose.yaml`:
-```yaml
-version: '3.8'
-services:
-  zkill_producer:
-    build: .
-    command: python zkill_producer.py
-   volumes:
-      - ./ZKillQueryData:/app/ZKillQueryData
-    restart: unless-stopped
+The compose setup includes:
+- **zkill_db_init**: Initializes database with schema and reference data
+- **zkill_producer**: Fetches killmails from zKillboard Redis queue
+- **zkill_consumer**: Multiple instances (3 by default) process killmails concurrently
+- **Automatic scaling**: Change `replicas: 3` to desired number of consumers
 
-  zkill_consumer:
-    build: .
-    command: python zkill_consumer.py
-    volumes:
-      - ./ZKillQueryData:/app/ZKillQueryData
-    restart: unless-stopped
-```
+Key features:
+- **Race condition prevention**: Atomic file operations prevent duplicate processing
+- **Database safety**: Init container ensures database is ready before consumers start
+- **Multi-consumer load balancing**: Consumers compete for files without conflicts
 
-Requires Dockerfile in the repo root.
-
-## Systemd Auto-Start
+### Systemd Auto-Start
 
 For auto-start on boot, create ~/.config/systemd/user/podman-compose-zkill.service:
 
@@ -113,27 +112,42 @@ WorkingDirectory=%h/ZKillQuery
 WantedBy=default.target
 ```
 
-
 Then:
-- systemctl --user daemon-reload
-- systemctl --user enable podman-compose-zkill
-- systemctl --user start podman-compose-zkill
+- `systemctl --user daemon-reload`
+- `systemctl --user enable podman-compose-zkill`
+- `systemctl --user start podman-compose-zkill`
 
 %h is the user's home directory.
 
-A convenience script provided.
+## Convenience Scripts
 
-`./podman_script.sh`
+**`./podman_script.sh`** - Setup and start the service
+**`./podman_cleanup.sh`** - Stop and clean up containers
 
-## Cleanup
+## Scaling Consumers
 
-To stop and clean:
+To change the number of consumer containers:
 
-`./podman_cleanup.sh`
+1. Edit `compose.yaml`
+2. Change `replicas: 3` under `zkill_consumer` service to your desired number
+3. Restart: `systemctl --user restart podman-compose-zkill`
 
- It needs:
- 
- - config.json
- 
-I have implemented containerization with podman compose and systemd auto-start as described above.
+## Monitoring
+
+- Each consumer logs with its unique ID (from container hostname)
+- Database initialization logs to `zkill_db_init.log`
+- Consumer logs to `zkill_consumer.log`
+- Producer logs to `zkill_producer.log`
+
+## Architecture
+
+```
+zKillboard Redis → Producer → File Queue (timestamped files)
+                                     ↓
+                              3+ Consumers (parallel)
+                                     ↓
+                              SQLite Database
+```
+
+The multi-consumer setup provides better throughput while preventing duplicate processing through atomic file operations.
 

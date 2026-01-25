@@ -11,7 +11,7 @@ import sqlite3
 
 from pathlib import Path
 
-from utils import setup_logger, get_data_dir, generate_timestamp, write_string_to_file, get_file_from_queue, load_config
+from utils import setup_logger, get_data_dir, generate_timestamp, write_string_to_file, claim_file_from_queue, load_config
 
 # global variables
 config = {}
@@ -73,6 +73,7 @@ def initialize_database(db_path: str, sql_file: str) -> bool:
     if not validate_sql_file(sql_path):
         return False
 
+    conn = None
     try:
         logger.info(f"Initializing database at {sql_file}")
         conn = create_database_connection(db_path)
@@ -80,7 +81,7 @@ def initialize_database(db_path: str, sql_file: str) -> bool:
         logger.info(f"Initialized successfully {success}")
         return success
     finally:
-        if 'conn' in locals():
+        if conn is not None:
             conn.close()
 
 def csv_to_dict(csv_file_path, id_is_which_column):
@@ -220,6 +221,74 @@ def insert_killmail(conn, killmail_id, xtime, solarSystemID, ship_type_id):
     logger.info("Unexpected Error")
     return 0
 
+def init_database_only():
+    """Initialize database with tables and reference data if needed"""
+    data_dir_path = get_data_dir()
+    data_dir = str(data_dir_path) + "/"
+    
+    log_file = data_dir + "zkill_db_init.log"
+    logger = setup_logger("zkill_db_init", log_file=log_file, console=True)
+    
+    config = load_config(data_dir, logger)
+    
+    logger.info("Starting database initialization...")
+    
+    db_fname = data_dir + config["db_fname"]
+    
+    if os.path.exists(db_fname):
+        logger.info("Database already exists, checking initialization...")
+        try:
+            conn = create_database_connection(str(db_fname))
+            cursor = conn.cursor()
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='killmails'")
+            if cursor.fetchone():
+                logger.info("Database is already initialized")
+                conn.close()
+                return
+            else:
+                logger.info("Database exists but tables missing, reinitializing...")
+        except Exception as e:
+            logger.info(f"Error checking database: {e}")
+    
+    logger.info("Creating and initializing database...")
+    
+    try:
+        sql_file = "ZKillQuery_setup.sql"
+        sql_path = Path(db_fname)
+        
+        if initialize_database(str(sql_path), sql_file):
+            logger.info("Database schema created successfully!")
+        else:
+            logger.error("Failed to create database schema")
+            sys.exit(1)
+        
+        conn = create_database_connection(str(sql_path))
+        
+        # Load reference data
+        logger.info("Loading reference data...")
+        
+        items_dict = csv_to_dict_try(data_dir + 'invTypes.csv', 0, logger)
+        flags_dict = csv_to_dict_try(data_dir + 'invFlags.csv', 0, logger)
+        solar_systems_dict = csv_to_dict_try(data_dir + 'mapSolarSystems.csv', 2, logger)
+        regions_dict = csv_to_dict_try(data_dir + 'mapRegions.csv', 0, logger)
+        groups_dict = csv_to_dict_try(data_dir + 'invGroups.csv', 0, logger)
+        categories_dict = csv_to_dict_try(data_dir + 'invCategories.csv', 0, logger)
+        
+        load_invTypes(conn)
+        load_invFlags(conn)
+        load_regions(conn)
+        load_solar_systems(conn)
+        load_invGroups(conn)
+        load_invCategories(conn)
+        
+        conn.close()
+        
+        logger.info("Database initialization completed successfully!")
+        
+    except Exception as e:
+        logger.error(f"Database initialization failed: {e}")
+        sys.exit(1)
+
 def insert_zkill(conn, data):
     try:
         killmail_id = data["killmail_id"]
@@ -305,8 +374,7 @@ if __name__ == "__main__":
 
     queue_dir = data_dir + "queue/"
 
-    # Load the tables
-
+    # Load reference data for processing
     items_dict = csv_to_dict_try(data_dir + 'invTypes.csv',0,logger)
     flags_dict = csv_to_dict_try(data_dir + 'invFlags.csv',0,logger)
     solar_systems_dict = csv_to_dict_try(data_dir + 'mapSolarSystems.csv',2,logger)
@@ -314,48 +382,21 @@ if __name__ == "__main__":
     groups_dict = csv_to_dict_try(data_dir + 'invGroups.csv',0,logger)
     categories_dict = csv_to_dict_try(data_dir + 'invCategories.csv',0,logger)
 
-    # Do we need to create the database?
-
+    # Database should be initialized by zkill_db_init service
     db_fname = data_dir + config["db_fname"]
-    sql_path = Path(db_fname)
-    created = False
+    logger.info(f"Connecting to database: {db_fname}")
+    
+    conn = create_database_connection(db_fname)
+    logger.info("Database connected successfully")
 
-    if not os.path.exists(db_fname):
-        try:
-            sql_file = "ZKillQuery_setup.sql"
-
-            if initialize_database(sql_path, sql_file):
-                logger.info("Database initialized successfully!")
-                created = True
-            else:
-                logger.info("Failed to initialize database.")
-                sys.exit(1)
-        except KeyboardInterrupt:
-            logger.info("\nOperation cancelled by user.")
-            sys.exit(1)
-        except Exception as e:
-            logger.info(f"An unexpected error occurred: {e}")
-            sys.exit(1)
-    else:
-        logger.info("Database already exists")
-
-    conn = create_database_connection(sql_path)
-
-    if created:
-        load_invTypes(conn)
-        load_invFlags(conn)
-        load_regions(conn)
-        load_solar_systems(conn)
-        load_invGroups(conn)
-        load_invCategories(conn)
-
+    consumer_id = os.getenv('CONSUMER_ID', f"pid-{os.getpid()}")
     while True:
         try:
-            logger.info("Checking Queue")
+            logger.info(f"Consumer {consumer_id} checking queue")
 
-            oldest_queued = get_file_from_queue(queue_dir)
+            oldest_queued = claim_file_from_queue(queue_dir, consumer_id)
             if oldest_queued:
-                logger.info(f"Oldest Queued {oldest_queued}")
+                logger.info(f"Consumer {consumer_id} claimed {oldest_queued}")
 
                 data =  json.loads(oldest_queued.read_text())
 
