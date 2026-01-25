@@ -288,8 +288,8 @@ if __name__ == "__main__":
     data_dir_path = get_data_dir()
     data_dir = str(data_dir_path) + "/"
 
-    log_file = data_dir + "zkill.log"
-    logger = setup_logger ("zkill_listener", log_file=log_file, console=True)
+    log_file = data_dir + "zkill_consumer.log"
+    logger = setup_logger ("zkill_consumer", log_file=log_file, console=True)
 
     config = load_config(data_dir, logger)
     redis_queue_name = config["redis_queue_name"]
