@@ -18,7 +18,7 @@ services:
         condition: service_completed_successfully
         
   zkill_consumer:
-    build: .
+    image: zkillquery_zkill_consumer_fixed:latest
     command: python3 zkill_consumer.py
     volumes:
       - ../ZKillQueryData:/app/ZKillQueryData
@@ -29,4 +29,4 @@ services:
       zkill_db_init:
         condition: service_completed_successfully
     deploy:
-      replicas: 1  # Single consumer for now
+      replicas: 3  # Test 3 consumers
