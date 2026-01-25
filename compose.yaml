@@ -23,11 +23,10 @@ services:
     volumes:
       - ../ZKillQueryData:/app/ZKillQueryData
     restart: unless-stopped
-    deploy:
-      replicas: 3
     environment:
-      - CONSUMER_ID=${HOSTNAME}
+      - CONSUMER_ID=zkill_consumer_1
     depends_on:
       zkill_db_init:
         condition: service_completed_successfully
-
+    deploy:
+      replicas: 1  # Single consumer for now

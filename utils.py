@@ -115,7 +115,7 @@ def write_string_to_file(filename: str, content: str) -> None:
 def claim_file_from_queue(directory: str | Path, consumer_id: str) -> Path | None:
     """
     Atomically claims the oldest file from the queue by renaming it.
-    This prevents multiple consumers from processing the same file.
+    This prevents multiple consumers from processing same file.
     
     Args:
         directory: Path to the queue directory
@@ -125,28 +125,72 @@ def claim_file_from_queue(directory: str | Path, consumer_id: str) -> Path | Non
         Path to the claimed file (with processing suffix), or None if no files available
     """
     import os
+    import time
     
     dir_path = Path(directory)
     
-    # Get pending files (not being processed) and sort them by name
-    files = sorted([
-        f for f in dir_path.iterdir() 
-        if f.is_file() and not f.name.startswith('.')
-    ])
+    max_attempts = 3  # Try to claim files multiple times
+    attempt = 0
     
-    if not files:
-        return None
+    while attempt < max_attempts:
+        attempt += 1
+        
+        # Refresh file list on each attempt
+        files = sorted([
+            f for f in dir_path.iterdir() 
+            if f.is_file() and not f.name.startswith('.') and '.processing-' not in f.name
+        ])
+        
+        if not files:
+            return None
+        
+        # Try to claim a file
+        for oldest_file in files:
+            claimed_file = oldest_file.with_name(f"{oldest_file.name}.processing-{consumer_id}")
+            
+            try:
+                # Atomic rename - only one consumer can succeed
+                oldest_file.rename(claimed_file)
+                return claimed_file
+            except (FileExistsError, FileNotFoundError):
+                # Another consumer already claimed this file or it disappeared
+                continue  # Try next file
+            except PermissionError:
+                # Temporary filesystem issue, wait briefly and retry
+                time.sleep(0.1)
+                try:
+                    oldest_file.rename(claimed_file)
+                    return claimed_file
+                except (FileExistsError, FileNotFoundError, PermissionError):
+                    continue
+        
+        # If we get here, all files were claimed by others, wait and retry
+        if attempt < max_attempts:
+            time.sleep(0.5 * attempt)  # Increasing backoff
     
-    oldest_file = files[0]
-    claimed_file = oldest_file.with_name(f"{oldest_file.name}.processing-{consumer_id}")
+    return None
     
-    try:
-        # Atomic rename - only one consumer can succeed
-        oldest_file.rename(claimed_file)
-        return claimed_file
-    except FileExistsError:
-        # Another consumer already claimed this file
-        return None
+    # Try to claim a file with retry logic
+    for oldest_file in files:
+        claimed_file = oldest_file.with_name(f"{oldest_file.name}.processing-{consumer_id}")
+        
+        try:
+            # Atomic rename - only one consumer can succeed
+            oldest_file.rename(claimed_file)
+            return claimed_file
+        except (FileExistsError, FileNotFoundError):
+            # Another consumer already claimed this file or it disappeared
+            continue  # Try the next file
+        except PermissionError:
+            # Temporary filesystem issue, wait briefly and retry
+            time.sleep(0.1)
+            try:
+                oldest_file.rename(claimed_file)
+                return claimed_file
+            except (FileExistsError, FileNotFoundError, PermissionError):
+                continue
+    
+    return None
 
 def get_file_from_queue(directory: str | Path) -> Path | None:
     """

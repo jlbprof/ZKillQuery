@@ -389,7 +389,12 @@ if __name__ == "__main__":
     conn = create_database_connection(db_fname)
     logger.info("Database connected successfully")
 
-    consumer_id = os.getenv('CONSUMER_ID', f"pid-{os.getpid()}")
+    consumer_id = os.getenv('CONSUMER_ID', f"consumer_{os.getpid()}")
+    
+    # Add small random delay to stagger consumer startups
+    import random
+    import time
+    time.sleep(random.uniform(0.5, 2.0))
     while True:
         try:
             logger.info(f"Consumer {consumer_id} checking queue")
@@ -432,5 +437,6 @@ if __name__ == "__main__":
             continue
         except Exception as e:  # Catch-all for unexpected issues
             logger.info(f"Unexpected error: 002 {e}")
-            raise  # Re-raise to exit if critical, or handle as needed
+            # Don't exit - just continue the loop
+            continue
 
