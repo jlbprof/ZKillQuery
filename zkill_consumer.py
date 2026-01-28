@@ -354,6 +354,12 @@ def insert_zkill(conn, data):
 # Main program execution starts here
 # ==============================================
 if __name__ == "__main__":
+    # Nice the process to lower priority before starting work
+    try:
+        os.nice(10)  # Add 10 to nice value (lower priority)
+    except PermissionError:
+        pass  # Continue if we don't have permission to change priority
+    
     data_dir_path = get_data_dir()
     data_dir = str(data_dir_path) + "/"
 
