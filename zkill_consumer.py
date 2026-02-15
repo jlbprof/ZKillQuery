@@ -129,11 +129,23 @@ def load_invTypes(conn):
 
     for row in items_dict.values():
         typeID = row[0]
+        groupID = row[1]
         typeName = row[2]
         description = row[3]
-        data.append((typeID, typeName, description))
+        mass = row[4]
+        volume = row[5]
+        capacity = row[6]
+        portionSize = row[7]
+        raceID = row[8]
+        basePrice = row[9]
+        published = row[10]
+        marketGroupID = row[11]
+        iconID = row[12]
+        soundID = row[13]
+        graphicID = row[14]
+        data.append((typeID, groupID, typeName, description, mass, volume, capacity, portionSize, raceID, basePrice, published, marketGroupID, iconID, soundID, graphicID))
 
-    batch_insert(conn, 'invTypes', ['typeID', 'typeName', 'description'], data)
+    batch_insert(conn, 'invTypes', ['typeID', 'groupID', 'typeName', 'description', 'mass', 'volume', 'capacity', 'portionSize', 'raceID', 'basePrice', 'published', 'marketGroupID', 'iconID', 'soundID', 'graphicID'], data)
  
 def load_invFlags(conn):
     logger.info("Inserting invFlags")
@@ -143,9 +155,10 @@ def load_invFlags(conn):
         flagID = row[0]
         flagName = row[1]
         flagText = row[2]
-        data.append((flagID, flagName, flagText))
+        orderID = row[3]
+        data.append((flagID, flagName, flagText, orderID))
 
-    batch_insert(conn, 'invFlags', ['flagID', 'flagName', 'flagText'], data)
+    batch_insert(conn, 'invFlags', ['flagID', 'flagName', 'flagText', 'orderID'], data)
  
 def load_regions(conn):
     logger.info("Inserting invRegions")
@@ -154,21 +167,56 @@ def load_regions(conn):
     for row in regions_dict.values():
         regionID = row[0]
         regionName = row[1]
-        data.append((regionID, regionName))
+        x = row[2]
+        y = row[3]
+        z = row[4]
+        xMin = row[5]
+        xMax = row[6]
+        yMin = row[7]
+        yMax = row[8]
+        zMin = row[9]
+        zMax = row[10]
+        factionID = row[11]
+        nebula = row[12]
+        radius = row[13]
+        data.append((regionID, regionName, x, y, z, xMin, xMax, yMin, yMax, zMin, zMax, factionID, nebula, radius))
 
-    batch_insert(conn, 'regions', ['regionID', 'regionName'], data)
+    batch_insert(conn, 'regions', ['regionID', 'regionName', 'x', 'y', 'z', 'xMin', 'xMax', 'yMin', 'yMax', 'zMin', 'zMax', 'factionID', 'nebula', 'radius'], data)
  
 def load_solar_systems(conn):
     logger.info("Inserting inv_solar_systems")
     data = []
 
     for row in solar_systems_dict.values():
-        regionID = row[0]
         solarSystemID = row[2]
+        regionID = row[0]
+        constellationID = row[1]
         solarSystemName = row[3]
-        data.append((solarSystemID, regionID, solarSystemName))
+        x = row[4]
+        y = row[5]
+        z = row[6]
+        xMin = row[7]
+        xMax = row[8]
+        yMin = row[9]
+        yMax = row[10]
+        zMin = row[11]
+        zMax = row[12]
+        luminosity = row[13]
+        border = row[14]
+        fringe = row[15]
+        corridor = row[16]
+        hub = row[17]
+        international = row[18]
+        regional = row[19]
+        constellation = row[20]
+        security = row[21]
+        factionID = row[22]
+        radius = row[23]
+        sunTypeID = row[24]
+        securityClass = row[25]
+        data.append((solarSystemID, regionID, constellationID, solarSystemName, x, y, z, xMin, xMax, yMin, yMax, zMin, zMax, luminosity, border, fringe, corridor, hub, international, regional, constellation, security, factionID, radius, sunTypeID, securityClass))
 
-    batch_insert(conn, 'solar_systems', ['solarSystemID', 'regionID', 'solarSystemName'], data)
+    batch_insert(conn, 'solar_systems', ['solarSystemID', 'regionID', 'constellationID', 'solarSystemName', 'x', 'y', 'z', 'xMin', 'xMax', 'yMin', 'yMax', 'zMin', 'zMax', 'luminosity', 'border', 'fringe', 'corridor', 'hub', 'international', 'regional', 'constellation', 'security', 'factionID', 'radius', 'sunTypeID', 'securityClass'], data)
 
 def load_invGroups(conn):
     logger.info("Inserting invGroups")

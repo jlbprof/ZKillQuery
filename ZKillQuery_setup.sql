@@ -22,15 +22,28 @@ CREATE TABLE IF NOT EXISTS droppedItems (
 CREATE TABLE IF NOT EXISTS invFlags (
     flagID   INTEGER PRIMARY KEY,
     flagName TEXT    NOT NULL,
-    flagText TEXT
+    flagText TEXT,
+    orderID  INTEGER
 );
 
 
 -- Table: invTypes
 CREATE TABLE IF NOT EXISTS invTypes (
-    typeID      INTEGER PRIMARY KEY,
-    typeName    TEXT    NOT NULL,
-    description TEXT
+    typeID       INTEGER PRIMARY KEY,
+    groupID      INTEGER,
+    typeName     TEXT    NOT NULL,
+    description  TEXT,
+    mass         REAL,
+    volume       REAL,
+    capacity     REAL,
+    portionSize  INTEGER,
+    raceID       TEXT,
+    basePrice    REAL,
+    published    INTEGER,
+    marketGroupID TEXT,
+    iconID       TEXT,
+    soundID      TEXT,
+    graphicID    INTEGER
 );
 
 
@@ -46,7 +59,19 @@ CREATE TABLE IF NOT EXISTS killmails (
 -- Table: regions
 CREATE TABLE IF NOT EXISTS regions (
     regionID   INTEGER PRIMARY KEY,
-    regionName TEXT    NOT NULL
+    regionName TEXT    NOT NULL,
+    x          REAL,
+    y          REAL,
+    z          REAL,
+    xMin       REAL,
+    xMax       REAL,
+    yMin       REAL,
+    yMax       REAL,
+    zMin       REAL,
+    zMax       REAL,
+    factionID  INTEGER,
+    nebula     INTEGER,
+    radius     REAL
 )
 STRICT;
 
@@ -55,7 +80,30 @@ STRICT;
 CREATE TABLE IF NOT EXISTS solar_systems (
     solarSystemID   INTEGER PRIMARY KEY,
     regionID        INTEGER REFERENCES regions (regionID),
-    solarSystemName TEXT    NOT NULL
+    constellationID INTEGER,
+    solarSystemName TEXT    NOT NULL,
+    x               REAL,
+    y               REAL,
+    z               REAL,
+    xMin            REAL,
+    xMax            REAL,
+    yMin            REAL,
+    yMax            REAL,
+    zMin            REAL,
+    zMax            REAL,
+    luminosity      REAL,
+    border          INTEGER,
+    fringe          INTEGER,
+    corridor        INTEGER,
+    hub             INTEGER,
+    international   INTEGER,
+    regional        INTEGER,
+    constellation  INTEGER,
+    security        REAL,
+    factionID       INTEGER,
+    radius          REAL,
+    sunTypeID       INTEGER,
+    securityClass   TEXT
 );
 
 
