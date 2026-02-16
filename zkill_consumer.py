@@ -456,6 +456,7 @@ if __name__ == "__main__":
         try:
             logger.info(f"Consumer {consumer_id} checking queue")
 
+            oldest_queued = None
             oldest_queued = claim_file_from_queue(queue_dir, consumer_id)
             if oldest_queued:
                 logger.info(f"Consumer {consumer_id} claimed {oldest_queued}")
@@ -488,12 +489,17 @@ if __name__ == "__main__":
 
         except requests.exceptions.RequestException as e:
             logger.info(f"Network error: {e} - Retrying in 10 seconds...")
+            if oldest_queued and oldest_queued.exists():
+                oldest_queued.unlink()
             time.sleep(10)  # Backoff to avoid hammering the API
         except json.JSONDecodeError as e:
             logger.info(f"JSON decode error: {e} - Skipping...")
+            if oldest_queued and oldest_queued.exists():
+                oldest_queued.unlink()
             continue
         except Exception as e:  # Catch-all for unexpected issues
             logger.info(f"Unexpected error: 002 {e}")
-            # Don't exit - just continue the loop
+            if oldest_queued and oldest_queued.exists():
+                oldest_queued.unlink()
             continue
 
