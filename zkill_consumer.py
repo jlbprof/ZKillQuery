@@ -123,7 +123,7 @@ def batch_insert(conn, table, columns, data):
         conn.rollback()
         raise e
 
-def load_invTypes(conn):
+def load_invTypes(conn, logger):
     logger.info("Inserting invTypes")
     data = []
 
@@ -147,7 +147,7 @@ def load_invTypes(conn):
 
     batch_insert(conn, 'invTypes', ['typeID', 'groupID', 'typeName', 'description', 'mass', 'volume', 'capacity', 'portionSize', 'raceID', 'basePrice', 'published', 'marketGroupID', 'iconID', 'soundID', 'graphicID'], data)
  
-def load_invFlags(conn):
+def load_invFlags(conn, logger):
     logger.info("Inserting invFlags")
     data = []
 
@@ -160,65 +160,65 @@ def load_invFlags(conn):
 
     batch_insert(conn, 'invFlags', ['flagID', 'flagName', 'flagText', 'orderID'], data)
  
-def load_regions(conn):
+def load_regions(conn, logger):
     logger.info("Inserting invRegions")
     data = []
 
     for row in regions_dict.values():
         regionID = row[0]
         regionName = row[1]
-        x = row[2]
-        y = row[3]
-        z = row[4]
-        xMin = row[5]
-        xMax = row[6]
-        yMin = row[7]
-        yMax = row[8]
-        zMin = row[9]
-        zMax = row[10]
-        factionID = row[11]
-        nebula = row[12]
-        radius = row[13]
+        x = float(row[2]) if row[2] and row[2] != 'None' else None
+        y = float(row[3]) if row[3] and row[3] != 'None' else None
+        z = float(row[4]) if row[4] and row[4] != 'None' else None
+        xMin = float(row[5]) if row[5] and row[5] != 'None' else None
+        xMax = float(row[6]) if row[6] and row[6] != 'None' else None
+        yMin = float(row[7]) if row[7] and row[7] != 'None' else None
+        yMax = float(row[8]) if row[8] and row[8] != 'None' else None
+        zMin = float(row[9]) if row[9] and row[9] != 'None' else None
+        zMax = float(row[10]) if row[10] and row[10] != 'None' else None
+        factionID = int(row[11]) if row[11] and row[11] != 'None' else None
+        nebula = int(row[12]) if row[12] and row[12] != 'None' else None
+        radius = float(row[13]) if row[13] and row[13] != 'None' else None
         data.append((regionID, regionName, x, y, z, xMin, xMax, yMin, yMax, zMin, zMax, factionID, nebula, radius))
 
     batch_insert(conn, 'regions', ['regionID', 'regionName', 'x', 'y', 'z', 'xMin', 'xMax', 'yMin', 'yMax', 'zMin', 'zMax', 'factionID', 'nebula', 'radius'], data)
  
-def load_solar_systems(conn):
+def load_solar_systems(conn, logger):
     logger.info("Inserting inv_solar_systems")
     data = []
 
     for row in solar_systems_dict.values():
-        solarSystemID = row[2]
-        regionID = row[0]
-        constellationID = row[1]
+        solarSystemID = int(row[2]) if row[2] and row[2] != 'None' else None
+        regionID = int(row[0]) if row[0] and row[0] != 'None' else None
+        constellationID = int(row[1]) if row[1] and row[1] != 'None' else None
         solarSystemName = row[3]
-        x = row[4]
-        y = row[5]
-        z = row[6]
-        xMin = row[7]
-        xMax = row[8]
-        yMin = row[9]
-        yMax = row[10]
-        zMin = row[11]
-        zMax = row[12]
-        luminosity = row[13]
-        border = row[14]
-        fringe = row[15]
-        corridor = row[16]
-        hub = row[17]
-        international = row[18]
-        regional = row[19]
-        constellation = row[20]
-        security = row[21]
-        factionID = row[22]
-        radius = row[23]
-        sunTypeID = row[24]
+        x = float(row[4]) if row[4] and row[4] != 'None' else None
+        y = float(row[5]) if row[5] and row[5] != 'None' else None
+        z = float(row[6]) if row[6] and row[6] != 'None' else None
+        xMin = float(row[7]) if row[7] and row[7] != 'None' else None
+        xMax = float(row[8]) if row[8] and row[8] != 'None' else None
+        yMin = float(row[9]) if row[9] and row[9] != 'None' else None
+        yMax = float(row[10]) if row[10] and row[10] != 'None' else None
+        zMin = float(row[11]) if row[11] and row[11] != 'None' else None
+        zMax = float(row[12]) if row[12] and row[12] != 'None' else None
+        luminosity = float(row[13]) if row[13] and row[13] != 'None' else None
+        border = int(row[14]) if row[14] and row[14] != 'None' else None
+        fringe = int(row[15]) if row[15] and row[15] != 'None' else None
+        corridor = int(row[16]) if row[16] and row[16] != 'None' else None
+        hub = int(row[17]) if row[17] and row[17] != 'None' else None
+        international = int(row[18]) if row[18] and row[18] != 'None' else None
+        regional = int(row[19]) if row[19] and row[19] != 'None' else None
+        constellation = int(row[20]) if row[20] and row[20] != 'None' else None
+        security = float(row[21]) if row[21] and row[21] != 'None' else None
+        factionID = int(row[22]) if row[22] and row[22] != 'None' else None
+        radius = float(row[23]) if row[23] and row[23] != 'None' else None
+        sunTypeID = int(row[24]) if row[24] and row[24] != 'None' else None
         securityClass = row[25]
         data.append((solarSystemID, regionID, constellationID, solarSystemName, x, y, z, xMin, xMax, yMin, yMax, zMin, zMax, luminosity, border, fringe, corridor, hub, international, regional, constellation, security, factionID, radius, sunTypeID, securityClass))
 
     batch_insert(conn, 'solar_systems', ['solarSystemID', 'regionID', 'constellationID', 'solarSystemName', 'x', 'y', 'z', 'xMin', 'xMax', 'yMin', 'yMax', 'zMin', 'zMax', 'luminosity', 'border', 'fringe', 'corridor', 'hub', 'international', 'regional', 'constellation', 'security', 'factionID', 'radius', 'sunTypeID', 'securityClass'], data)
 
-def load_invGroups(conn):
+def load_invGroups(conn, logger, data_dir):
     logger.info("Inserting invGroups")
     csv_file_path = data_dir + 'invGroups.csv'
     data = []
@@ -229,7 +229,7 @@ def load_invGroups(conn):
             data.append(tuple(row))
     batch_insert(conn, 'invGroups', headers, data)
 
-def load_invCategories(conn):
+def load_invCategories(conn, logger, data_dir):
     logger.info("Inserting invCategories")
     csv_file_path = data_dir + 'invCategories.csv'
     data = []
@@ -271,6 +271,8 @@ def insert_killmail(conn, killmail_id, xtime, solarSystemID, ship_type_id):
 
 def init_database_only():
     """Initialize database with tables and reference data if needed"""
+    global items_dict, flags_dict, solar_systems_dict, regions_dict, groups_dict, categories_dict
+    
     data_dir_path = get_data_dir()
     data_dir = str(data_dir_path) + "/"
     
@@ -321,12 +323,12 @@ def init_database_only():
         groups_dict = csv_to_dict_try(data_dir + 'invGroups.csv', 0, logger)
         categories_dict = csv_to_dict_try(data_dir + 'invCategories.csv', 0, logger)
         
-        load_invTypes(conn)
-        load_invFlags(conn)
-        load_regions(conn)
-        load_solar_systems(conn)
-        load_invGroups(conn)
-        load_invCategories(conn)
+        load_invTypes(conn, logger)
+        load_invFlags(conn, logger)
+        load_regions(conn, logger)
+        load_solar_systems(conn, logger)
+        load_invGroups(conn, logger, data_dir)
+        load_invCategories(conn, logger, data_dir)
         
         conn.close()
         
