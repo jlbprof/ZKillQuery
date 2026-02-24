@@ -57,7 +57,7 @@ def execute_sql_file(conn: sqlite3.Connection, sql_file: Path) -> bool:
         logger.info(f"Unexpected error: 001 {e}")
         return False
 
-def validate_sql_file(sql_file: Path) -> bool:
+def validate_sql_file(sql_file: Path, logger) -> bool:
     """Perform basic validation on the SQL file."""
     if not sql_file.exists():
         logger.info(f"Error: File {sql_file} does not exist")
@@ -66,11 +66,11 @@ def validate_sql_file(sql_file: Path) -> bool:
         logger.info("Warning: File extension is not .sql")
     return True
 
-def initialize_database(db_path: str, sql_file: str) -> bool:
+def initialize_database(db_path: str, sql_file: str, logger) -> bool:
     """Main function to initialize the database."""
     sql_path = Path(sql_file)
     
-    if not validate_sql_file(sql_path):
+    if not validate_sql_file(sql_path, logger):
         return False
 
     conn = None
@@ -302,15 +302,14 @@ def init_database_only():
     
     try:
         sql_file = "ZKillQuery_setup.sql"
-        sql_path = Path(db_fname)
         
-        if initialize_database(str(sql_path), sql_file):
+        if initialize_database(db_fname, sql_file, logger):
             logger.info("Database schema created successfully!")
         else:
             logger.error("Failed to create database schema")
             sys.exit(1)
         
-        conn = create_database_connection(str(sql_path))
+        conn = create_database_connection(db_fname)
         
         # Load reference data
         logger.info("Loading reference data...")
