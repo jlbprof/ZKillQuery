@@ -33,23 +33,27 @@ class ShipKillsBySystem(Report):
     def __init__(self, ship_filter=None):
         super().__init__(name=self.__class__.__name__)
         self.ship_filter = ship_filter
+        self.region_filter = None
     
     def parse_args(self):
         parser = argparse.ArgumentParser(
             description='Report where ships were destroyed (system, region, security).',
+            formatter_class=argparse.RawDescriptionHelpFormatter,
             epilog='''
 Examples:
-  %(prog)s hauling         -- Super class: haulers, freighters, jump freighters
-  %(prog)s combat          -- Super class: frigates, cruisers, battleships, etc.
-  %(prog)s Freighter      -- Single group
-  %(prog)s Fenrir         -- Specific ship name
-
-Super Classes: %(prog)s -h to see list
-''' % {'prog': sys.argv[0]}
+  %(prog)s hauling
+  %(prog)s hauling -d 7
+  %(prog)s hauling -r Aridia
+  %(prog)s combat
+  %(prog)s Freighter
+  %(prog)s Fenrir
+'''
         )
         parser.add_argument('ship_filter', nargs='?', help='Ship group, super class, or ship name')
         parser.add_argument('-d', '--days', type=int, default=self.days_back, 
                           help=f'Number of days to look back (default: {self.days_back})')
+        parser.add_argument('-r', '--region', type=str, default=None,
+                          help='Filter by region name (e.g., Aridia, Genesis)')
         args = parser.parse_args()
         
         if not args.ship_filter:
@@ -64,6 +68,7 @@ Super Classes: %(prog)s -h to see list
         
         self.ship_filter = args.ship_filter
         self.days_back = args.days
+        self.region_filter = args.region
     
     def get_group_ids(self) -> list[int] | None:
         filter_val = (self.ship_filter or "").lower()
@@ -86,7 +91,8 @@ Super Classes: %(prog)s -h to see list
             return None
         
         placeholders = ','.join('?' * len(group_ids))
-        return f"""
+        
+        query = f"""
             SELECT
                 s.solarSystemName AS system_name,
                 s.security AS security_status,
@@ -106,21 +112,16 @@ Super Classes: %(prog)s -h to see list
             WHERE
                 km.time > ?
                 AND ig.groupID IN ({placeholders})
+        """
+        
+        if self.region_filter:
+            query += f"\n                AND LOWER(r.regionName) = ?"
+        
+        query += """
             ORDER BY
                 km.time DESC
         """
-    
-    def execute_query(self, query, params=None):
-        try:
-            with sqlite3.connect(self.db_path) as conn:
-                conn.row_factory = sqlite3.Row
-                cursor = conn.cursor()
-                cursor.execute(query, params or ())
-                return cursor.fetchall()
-        except sqlite3.Error as e:
-            if self.logger:
-                self.logger.error(f"Database error: {e}")
-            return None
+        return query
     
     def get_data(self, past_date):
         query = self.build_query(past_date)
@@ -131,8 +132,12 @@ Super Classes: %(prog)s -h to see list
         group_ids = self.get_group_ids()
         if not group_ids:
             return []
-        params = (past_date,) + tuple(group_ids)
-        results = self.execute_query(query, params)
+        
+        params = [past_date] + group_ids
+        if self.region_filter:
+            params.append(self.region_filter.lower())
+        
+        results = self.execute_query(query, tuple(params))
         if results:
             return [self._row_to_dict(row) for row in results]
         return []

@@ -33,23 +33,27 @@ class ShipsByGroup(Report):
     def __init__(self, group_filter=None):
         super().__init__(name=self.__class__.__name__)
         self.group_filter = group_filter
+        self.region_filter = None
     
     def parse_args(self):
         parser = argparse.ArgumentParser(
             description='Report ships lost by group in the last N days.',
+            formatter_class=argparse.RawDescriptionHelpFormatter,
             epilog='''
 Examples:
-  %(prog)s hauling         -- Super class: haulers, freighters, jump freighters
-  %(prog)s combat          -- Super class: frigates, cruisers, battleships, etc.
-  %(prog)s Freighter      -- Single group
-  %(prog)s Fenrir          -- Specific ship name
-
-Super Classes: %(prog)s -h to see list
-''' % {'prog': sys.argv[0]}
+  %(prog)s hauling
+  %(prog)s hauling -d 7
+  %(prog)s hauling -r Aridia
+  %(prog)s combat
+  %(prog)s Freighter
+  %(prog)s Fenrir
+'''
         )
         parser.add_argument('ship_group', nargs='?', help='Ship group, super class, or ship name')
         parser.add_argument('-d', '--days', type=int, default=self.days_back, 
                           help=f'Number of days to look back (default: {self.days_back})')
+        parser.add_argument('-r', '--region', type=str, default=None,
+                          help='Filter by region name (e.g., Aridia, Genesis)')
         args = parser.parse_args()
         
         if not args.ship_group:
@@ -64,6 +68,7 @@ Super Classes: %(prog)s -h to see list
         
         self.group_filter = args.ship_group
         self.days_back = args.days
+        self.region_filter = args.region
     
     def get_group_ids(self) -> list[int] | None:
         filter_val = (self.group_filter or "").lower()
@@ -87,7 +92,8 @@ Super Classes: %(prog)s -h to see list
             return None
         
         placeholders = ','.join('?' * len(group_ids))
-        return f"""
+        
+        query = f"""
             SELECT
                 ig.groupName AS category,
                 it.typeName AS ship_type,
@@ -98,32 +104,44 @@ Super Classes: %(prog)s -h to see list
                 invTypes it ON km.ship_type_id = it.typeID
             JOIN
                 invGroups ig ON it.groupID = ig.groupID
+            JOIN
+                solar_systems s ON km.solarSystemID = s.solarSystemID
+            JOIN
+                regions r ON s.regionID = r.regionID
             WHERE
                 km.time > ?
                 AND ig.groupID IN ({placeholders})
+        """
+        
+        if self.region_filter:
+            query += f"\n                AND LOWER(r.regionName) = ?"
+        
+        query += """
             GROUP BY
                 ig.groupName, it.typeName
             ORDER BY
                 total_kills DESC
         """
-    
-    def execute_query(self, query, params=None):
-        try:
-            with sqlite3.connect(self.db_path) as conn:
-                conn.row_factory = sqlite3.Row
-                cursor = conn.cursor()
-                cursor.execute(query, params or ())
-                return cursor.fetchall()
-        except sqlite3.Error as e:
-            if self.logger:
-                self.logger.error(f"Database error: {e}")
-            return None
+        return query
     
     def get_data(self, past_date):
         query = self.build_query(past_date)
         if not query:
             print(f"Unknown ship group: {self.group_filter}")
             return []
+        
+        group_ids = self.get_group_ids()
+        if not group_ids:
+            return []
+        
+        params = [past_date] + group_ids
+        if self.region_filter:
+            params.append(self.region_filter.lower())
+        
+        results = self.execute_query(query, tuple(params))
+        if results:
+            return [self._row_to_dict(row) for row in results]
+        return []
         
         group_ids = self.get_group_ids()
         if not group_ids:
