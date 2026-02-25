@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - ZKillQuery{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="h3">Dashboard</h1>
+        <p class="text-muted">Overview of recent kill activity</p>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Total Kills (7 days)</h6>
+                        <h2 class="mb-0">{{ stats.total_kills|default(0)|format_number }}</h2>
+                    </div>
+                    <i class="bi bi-skull fs-1 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-danger text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Hauler Kills (7 days)</h6>
+                        <h2 class="mb-0">{{ stats.hauler_kills|default(0)|format_number }}</h2>
+                    </div>
+                    <i class="bi bi-truck fs-1 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-dark">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Most Deadly System</h6>
+                        <h6 class="mb-0">{{ stats.deadliest_system|default('N/A') }}</h6>
+                    </div>
+                    <i class="bi bi-geo-alt fs-1 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Top Ship Killed</h6>
+                        <h6 class="mb-0">{{ stats.top_ship|default('N/A') }}</h6>
+                    </div>
+                    <i class="bi bi-ship fs-1 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-collection me-2"></i>Quick Reports</h5>
+            </div>
+            <div class="list-group list-group-flush">
+                <a href="{{ url_for('main.ships_by_group', ship='hauling', days=7) }}" class="list-group-item list-group-item-action">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-truck me-2"></i>Hauler Losses (7 days)</span>
+                        <i class="bi bi-chevron-right"></i>
+                    </div>
+                </a>
+                <a href="{{ url_for('main.ship_kills_by_system', ship='hauling', days=7) }}" class="list-group-item list-group-item-action">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-geo me-2"></i>Hauler Kills by System</span>
+                        <i class="bi bi-chevron-right"></i>
+                    </div>
+                </a>
+                <a href="{{ url_for('main.ships_by_group', ship='combat', days=7) }}" class="list-group-item list-group-item-action">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-shield-shaded me-2"></i>Combat Ship Losses</span>
+                        <i class="bi bi-chevron-right"></i>
+                    </div>
+                </a>
+                <a href="{{ url_for('main.ships_by_group', ship='Freighter', days=7) }}" class="list-group-item list-group-item-action">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-box-seam me-2"></i>Freighter Losses</span>
+                        <i class="bi bi-chevron-right"></i>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-funnel me-2"></i>Filters</h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('main.ships_by_group') }}" method="get">
+                    <div class="mb-3">
+                        <label class="form-label">Ship Group</label>
+                        <select name="ship" class="form-select">
+                            <option value="hauling">Hauling (Hauler + Freighter + Jump Freighter)</option>
+                            <option value="combat">Combat</option>
+                            <option value="Freighter">Freighter</option>
+                            <option value="Hauler">Hauler</option>
+                            <option value="Battleship">Battleship</option>
+                            <option value="Cruiser">Cruiser</option>
+                            <option value="Frigate">Frigate</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Days</label>
+                        <select name="days" class="form-select">
+                            <option value="2">Last 2 days</option>
+                            <option value="7" selected>Last 7 days</option>
+                            <option value="14">Last 14 days</option>
+                            <option value="30">Last 30 days</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Region (optional)</label>
+                        <input type="text" name="region" class="form-control" placeholder="e.g., Aridia, Genesis">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Run Report</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}{{ report_name }} - ZKillQuery{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="h3">{{ report_name }}</h1>
+        <p class="text-muted">
+            {% if region %}
+                {{ ship }} in {{ region }} (last {{ days }} days)
+            {% else %}
+                {{ ship }} (last {{ days }} days)
+            {% endif %}
+        </p>
+    </div>
+    <div class="col-auto">
+        <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="get" class="row g-3 mb-4">
+            <div class="col-md-3">
+                <label class="form-label">Ship Group</label>
+                <select name="ship" class="form-select">
+                    <option value="hauling" {% if ship == 'hauling' %}selected{% endif %}>Hauling</option>
+                    <option value="combat" {% if ship == 'combat' %}selected{% endif %}>Combat</option>
+                    <option value="Freighter" {% if ship == 'Freighter' %}selected{% endif %}>Freighter</option>
+                    <option value="Hauler" {% if ship == 'Hauler' %}selected{% endif %}>Hauler</option>
+                    <option value="Battleship" {% if ship == 'Battleship' %}selected{% endif %}>Battleship</option>
+                    <option value="Cruiser" {% if ship == 'Cruiser' %}selected{% endif %}>Cruiser</option>
+                    <option value="Frigate" {% if ship == 'Frigate' %}selected{% endif %}>Frigate</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Days</label>
+                <select name="days" class="form-select">
+                    <option value="2" {% if days == 2 %}selected{% endif %}>2</option>
+                    <option value="7" {% if days == 7 %}selected{% endif %}>7</option>
+                    <option value="14" {% if days == 14 %}selected{% endif %}>14</option>
+                    <option value="30" {% if days == 30 %}selected{% endif %}>30</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Region</label>
+                <input type="text" name="region" class="form-control" value="{{ region or '' }}" placeholder="e.g., Aridia">
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">Run</button>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <a href="{{ request.path }}?ship={{ ship }}&days={{ days }}&region={{ region }}&format=json" 
+                   class="btn btn-outline-secondary w-100" target="_blank">
+                    <i class="bi bi-filetype-json"></i> JSON
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card mt-3">
+    <div class="table-responsive">
+        <table class="table table-striped table-hover mb-0">
+            <thead class="table-dark">
+                <tr>
+                    {% for col_name, col_key in columns %}
+                    <th>{{ col_name }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% if data %}
+                    {% for row in data %}
+                    <tr>
+                        {% for col_name, col_key in columns %}
+                        <td>
+                            {% if col_key == 'security' %}
+                                {{ row[col_key]|round_up(1) }}
+                            {% elif col_key == 'total_kills' %}
+                                {{ row[col_key]|format_number }}
+                            {% else %}
+                                {{ row[col_key] }}
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="{{ columns|length }}" class="text-center text-muted py-4">
+                            No data found for the selected criteria.
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="mt-3 text-muted">
+    <small>Showing {{ data|length }} records</small>
+</div>
+{% endblock %}

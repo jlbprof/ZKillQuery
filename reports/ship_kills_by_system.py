@@ -3,6 +3,7 @@
 
 import sys
 import argparse
+import math
 import sqlite3
 from ZKillReports import Report
 
@@ -155,9 +156,10 @@ Examples:
         return "%-30.30s %8.8s %-25.25s %-25.25s %-25.25s" % ("System", "Sec", "Region", "Ship Type", "Kill Time")
     
     def format_row(self, row):
-        return "%-30.30s %8.2f %-25.25s %-25.25s %-25.25s" % (
+        sec = math.ceil(row["security"] * 10) / 10
+        return "%-30.30s %8.1f %-25.25s %-25.25s %-25.25s" % (
             row["system"],
-            row["security"],
+            sec,
             row["region"],
             row["ship_type"],
             row["kill_time"]
